@@ -1,7 +1,10 @@
 # Reliability-bench: The Test Suite Benchmarking LLM Accuracy on SRE Tasks ⚗️
 
-Think of **Reliability-bench** as the *SWE-bench for SREs*.  
-This benchmark evaluates popular Large Language Models on tasks commonly performed by Site Reliability Engineers, helping reliability practitioners choose the right model for the job—whether it's powering IDE assistants, automating operational workflows, or improving incident response.
+Think of **Reliability-bench** as the *SWE-bench for SREs*. 
+
+This benchmark evaluates Large Language Models on tasks commonly performed by Site Reliability Engineers, helping reliability practitioners choose the right model for the job, whether it's powering IDE assistants, automating operational workflows, or improving incident response.
+
+[image of graph showing accuracy vs price]()
 
 ## Findings
 
@@ -19,12 +22,18 @@ The table below represents the average accuracy of each model across all SRE-rel
 Reliability-bench evaluates models on tasks that represent real, day-to-day SRE responsibilities.  
 Each task category includes multiple test cases with expected outputs, graded programmatically or via structured evaluation. For each test, we open-source 40% of the entire dataset, available on our [HF repo]().
 
-### Eval 
+### Test one
+
+Explanation of the methodology...
+
+### Test two
+Explanation of the methodology...
+
 
 
 ## Getting Started
 
-To reproduce our results or use our benchmark
+To reproduce our results or use our benchmark to benchmark other models.
 
 ```
 # Create a virtual environment and install OpenBench
