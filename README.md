@@ -1,8 +1,7 @@
-# SRE-skills-bench: The Test Suite Benchmarking LLM Accuracy on SRE Tasks ⚗️
+# SRE-skills-bench
+Benchmarks LLMs on SRE-type tasks.
 
-Think of **SRE-skills-bench** as the *SWE-bench for SREs*. 
-
-This benchmark evaluates Large Language Models on tasks commonly performed by Site Reliability Engineers, helping reliability practitioners choose the right model for the job, whether it's powering IDE assistants, automating operational workflows, or improving incident response.
+This benchmark evaluates Large Language Models on tasks commonly performed by Site Reliability Engineers, helping reliability practitioners choose the right model for the job, whether it's powering IDE assistants, automating operational workflows, or improving incident response. Think of SRE-skills-bench as the SWE-bench of Site Reliability Engineering. 
 
 [image of graph showing accuracy vs price]()
 
