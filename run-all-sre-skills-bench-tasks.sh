@@ -1,17 +1,18 @@
 #!/bin/bash
 # Script automating the execution of SRE-skills-bench accross its tasks for a specific model and output CSV format for easy import
 
-export OPENAI_API_KEY=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
-export OPENROUTER_API_KEY=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
-export ANTHROPIC_API_KEY=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
+export OPENAI_API_KEY=""
+export OPENROUTER_API_KEY=""
+export ANTHROPIC_API_KEY=""
 
 # Configuration
-MODEL="openrouter/anthropic/claude-sonnet-4.5"
+MODEL="openrouter/qwen/qwen3-vl-235b-a22b-thinking"
 CSV_FILE="results_$(date +%Y%m%d_%H%M%S).csv"
 LOG_DIR="logs"
 
 # SRE-skills-tasks
-SUBTASKS="s3-security-mcq azure-network-mcq azure-compute-mcq azure-k8s-mcq gcp-network-mcq gcp-compute-mcq gcp-storage-mcq vpc-nat-mcq iam-mcq"
+#SUBTASKS="s3-security-mcq azure-network-mcq azure-compute-mcq azure-k8s-mcq gcp-network-mcq gcp-compute-mcq gcp-storage-mcq vpc-nat-mcq iam-mcq"
+SUBTASKS="s3-security-mcq"
 
 # Temporary file to store results
 TEMP_RESULTS="/tmp/eval_results_$$.txt"
