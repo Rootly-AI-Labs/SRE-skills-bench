@@ -7,13 +7,9 @@ This benchmark evaluates Large Language Models on tasks commonly performed by Si
 
 ## Findings
 
-The table below represents the average accuracy of each model across all SRE-related tasks** included in the benchmark.
+The table below represents the average accuracy of each model across all SRE-related tasks included in the benchmark.
 
-| Model        | % Accuracy | Avg. $ / 1k tokens | Org      | Date       |
-|--------------|------------|--------------------|----------|------------|
-| MODEL_NAME   | XX%        | $X.XX              | IMG | YYYY-MM-DD |
-| MODEL_NAME   | XX%        | $X.XX              | IMG | YYYY-MM-DD |
-| MODEL_NAME   | XX%        | $X.XX              | IMG | YYYY-MM-DD |
+COMING SOON.
 
 
 ## Methodology
@@ -27,7 +23,6 @@ Explanation of the methodology...
 
 ### Test two
 Explanation of the methodology...
-
 
 
 ## Getting Started
