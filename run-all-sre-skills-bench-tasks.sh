@@ -93,8 +93,9 @@ for subtask in $SUBTASKS; do
 done
 
 # Generate CSV file
-# Data row: model name + accuracy scores
-printf "%s" "$MODEL" > "$CSV_FILE"
+# Data row: execution date + model name + accuracy scores
+EXEC_DATE=$(date +%Y-%m-%d)
+printf "%s,%s" "$EXEC_DATE" "$MODEL" > "$CSV_FILE"
 for subtask in $SUBTASKS; do
     # Extract accuracy for this subtask from temp file
     accuracy=$(grep "^$subtask:" "$TEMP_RESULTS" | cut -d: -f2)
