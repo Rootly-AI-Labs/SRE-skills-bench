@@ -6,6 +6,8 @@ This benchmark evaluates Large Language Models on tasks commonly performed by Si
 
 ![image of graph showing accuracy vs price](static/benchmark_scatter_plots.png)
 
+At the Rootly AI Labs, we run evals on frontier models the day they are released, and we share our findings on our social media platforms ([LinkedIn](https://linkedin.com/company/rootlyhq/), [X](https://x.com/rootlyhq)). We also present our benchmarks at leading ML research conferences, including as workshop papers at NeurIPS 2025, ICML 2025 and ACL 2025.
+
 ## Findings
 
 The table below represents the average accuracy of each model across all SRE-related tasks included in the benchmark.
@@ -58,8 +60,6 @@ This GMCQ benchmark was presented by the Rootly AI Labs as a workshop paper at I
 This benchmark evaluates a model's ability to understand common code requests for SREs. Each question in this benchmark provides the model with a specific request and presents 4 code diffs of Terraform code and instructions that resolve similar requests. The model must select the correct choice of code diff.
 
 This benchmark contains a wide array of scenarios, including compute, network, kubernetes and security requests on AWS, GCP and Azure. For a model to perform well on this benchmark, it must be able to demonstrate generalizable understanding of SRE requests across a wide array of tasks and target platforms, making this benchmark relevant to determine relevant models that can assist SREs in their day-to-day work.
-
-
 
 
 ## Where we share our findings
