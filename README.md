@@ -66,8 +66,9 @@ This benchmark contains a wide array of scenarios, including compute, network, k
 
 |Conference Name| Date|
 |--- | --- |
-| ER @ NeurIPS | Dec 2-7 2025 |
-| New In ML @ ICML 2025, KnowFM @ ACL 2025 | July 13-19 2025 |
+| ER @ NeurIPS | Dec. 2-7, 2025 |
+| KnowFM @ ACL 2025 | July 27 to Aug. 1, 2025 |
+| New In ML @ ICML 2025 | July 13-19, 2025 |
 
 ## 🔗 About the Rootly AI Labs
 SRE-skills-bench is built with ❤️ by the [Rootly AI Labs](https://rootly.com/ai-labs) for engineering teams everywhere. The Rootly AI Labs is a fellow-led community designed to redefine reliability engineering. We develop innovative prototypes, create open-source tools, and produce research that's shared to advance the standards of operational excellence. We want to thank Anthropic, Google Cloud, and Google DeepMind for their support.
