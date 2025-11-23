@@ -2,9 +2,9 @@
 
 > *Benchmarks LLMs on SRE-type tasks!*
 
-This benchmark evaluates Large Language Models on tasks commonly performed by Site Reliability Engineers, helping reliability practitioners choose the right model for the job, whether it's powering IDE assistants, automating operational workflows, or improving incident response. Think of SRE-skills-bench as the SWE-bench of Site Reliability Engineering. *
+This benchmark evaluates Large Language Models on tasks commonly performed by Site Reliability Engineers, helping reliability practitioners choose the right model for the job, whether it's powering IDE assistants, automating operational workflows, or improving incident response. Think of SRE-skills-bench as the SWE-bench of Site Reliability Engineering. 
 
-![image of graph showing accuracy vs price](benchmark_scatter_plots.png)
+![image of graph showing accuracy vs price](static/benchmark_scatter_plots.png)
 
 ## Findings
 

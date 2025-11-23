@@ -43,7 +43,7 @@ def parse_data(filename):
     return models, costs, rootly_gmcq, azure_k8s_mcq, s3_security_mcq
 
 # Parse the data
-models, costs, rootly_gmcq, azure_k8s_mcq, s3_security_mcq = parse_data('data.csv')
+models, costs, rootly_gmcq, azure_k8s_mcq, s3_security_mcq = parse_data('static/data.csv')
 
 # Create three scatter plots
 fig, axes = plt.subplots(1, 3, figsize=(20, 6))
