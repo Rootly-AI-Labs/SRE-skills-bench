@@ -12,17 +12,34 @@ The table below represents the average accuracy of each model across all SRE-rel
 
 | Model | Output Token Cost (per M) | Rootly GMCQ | Azure K8s MCQ | S3 Security MCQ |
 |-------|---------------------------|-------------|---------------|-----------------|
-| sonnet-4.5 | $15.00 | 89.0% | 94.0% | 88.4% |
-| gpt-4.1 | $8.00 | 81.8% | 76.5% | 63.8% |
-| gpt-5 | $10.00 | 89.0% | 90.6% | 91.3% |
+| gemini-3-pro 🏆 | $12.00 | 89.7% | 95.3% | 95.7% |
 | gpt-5.1 | $10.00 | 89.2% | 90.2% | 82.6% |
-| gemini-3-pro | $12.00 | 89.7% | 95.3% | 95.7% |
+| sonnet-4.5 | $15.00 | 89.0% | 94.0% | 88.4% |
+| gpt-5 | $10.00 | 89.0% | 90.6% | 91.3% |
+| qwen3-vl-235b-a22b-thinking | $3.95 | 87.3% | 88.5% | 72.5% |
+| gpt-oss-120b | $0.50 | 84.3% | 70.1% | 59.4% |
 | nova-pro-1 | $3.20 | 83.3% | 64.5% | 42.0% |
 | glm-4.6 | $2.20 | 82.8% | 64.5% | 46.4% |
-| gpt-oss-120b | $0.50 | 84.3% | 70.1% | 59.4% |
+| gpt-4.1 | $8.00 | 81.8% | 76.5% | 63.8% |
 | llama-4-maverick | $0.85 | 80.8% | 53.0% | 34.8% |
-| qwen3-vl-235b-a22b-thinking | $3.95 | 87.3% | 88.5% | 72.5% |
 
+## Getting Started
+
+To reproduce our results or use our benchmark to benchmark other models.
+
+```bash
+# Create a virtual environment and install OpenBench
+uv venv
+source .venv/bin/activate
+uv pip install openbench
+
+
+#Set your API key (any provider!)
+export GROQ_API_KEY=your_key  # or OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.
+
+#Run Rootly’s benchmark
+bench eval gmcq --model "groq/llama-3.1-8b-instant" --T subtask=mastodon
+```
 
 ## Methodology
 
@@ -43,23 +60,7 @@ This benchmark evaluates a model's ability to understand common code requests fo
 This benchmark contains a wide array of scenarios, including compute, network, kubernetes and security requests on AWS, GCP and Azure. For a model to perform well on this benchmark, it must be able to demonstrate generalizable understanding of SRE requests across a wide array of tasks and target platforms, making this benchmark relevant to determine relevant models that can assist SREs in their day-to-day work.
 
 
-## Getting Started
 
-To reproduce our results or use our benchmark to benchmark other models.
-
-```bash
-# Create a virtual environment and install OpenBench
-uv venv
-source .venv/bin/activate
-uv pip install openbench
-
-
-#Set your API key (any provider!)
-export GROQ_API_KEY=your_key  # or OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.
-
-#Run Rootly’s benchmark
-bench eval gmcq --model "groq/llama-3.1-8b-instant" --T subtask=mastodon
-```
 
 ## Where we share our findings
 
