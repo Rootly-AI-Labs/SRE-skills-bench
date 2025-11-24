@@ -4,7 +4,7 @@
 
 SRE-skills-bench evaluates LLMs on tasks commonly performed by Site Reliability Engineers, helping reliability practitioners choose the right model for the job, whether it's powering IDE assistants, automating operational workflows, or improving incident response. Think of SRE-skills-bench as the SWE-bench of Site Reliability Engineering. 
 
-Read our latest findings with [Gemini 3 Pro](https://rootly.com/blog/gemini-3-lead-in-sre-tasks) on our blog post.
+Read our latest findings with Gemini 3 Pro on our [blog post](https://rootly.com/blog/gemini-3-lead-in-sre-tasks).
 
 ![image of graph showing accuracy vs price](static/benchmark_scatter_plots.png)
 
