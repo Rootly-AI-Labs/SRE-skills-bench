@@ -4,6 +4,8 @@
 
 SRE-skills-bench evaluates LLMs on tasks commonly performed by Site Reliability Engineers, helping reliability practitioners choose the right model for the job, whether it's powering IDE assistants, automating operational workflows, or improving incident response. Think of SRE-skills-bench as the SWE-bench of Site Reliability Engineering. 
 
+Read our latest findings with [Gemini 3 Pro](https://rootly.com/blog/gemini-3-lead-in-sre-tasks) on our blog post.
+
 ![image of graph showing accuracy vs price](static/benchmark_scatter_plots.png)
 
 At the Rootly AI Labs, we run SRE-skills-bench on frontier models the day they are released, and we share our findings on our social media platforms ([LinkedIn](https://linkedin.com/company/rootlyhq/), [X](https://x.com/rootlyhq)). We also present our benchmarks at leading ML research conferences, including as workshop papers at NeurIPS, ICML, and ACL.
