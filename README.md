@@ -37,13 +37,28 @@ uv venv
 source .venv/bin/activate
 uv pip install openbench
 
-
-#Set your API key (any provider!)
+# Set your API key (any provider!)
 export GROQ_API_KEY=your_key  # or OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.
 
-#Run Rootly’s benchmark
+# Run Rootly's benchmark
 bench eval gmcq --model "groq/llama-3.1-8b-instant" --T subtask=mastodon
 ```
+
+### Running the Automation Script
+
+To run evaluations across all SRE tasks using the automation script:
+
+```bash
+# Copy the example env file and add your API keys
+cp scripts/.env.example scripts/.env
+# Edit scripts/.env with your API keys
+
+# Run the evaluation script
+cd scripts
+./run-all-sre-skills-bench-tasks.sh
+```
+
+Results will be saved to a timestamped CSV file.
 
 ## Methodology
 
