@@ -1,18 +1,24 @@
 #!/bin/bash
 # Script automating the execution of SRE-skills-bench accross its tasks for a specific model and output CSV format for easy import
 
-export OPENAI_API_KEY=""
-export OPENROUTER_API_KEY=""
-export ANTHROPIC_API_KEY=""
+# Load API keys from .env file
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    set -a
+    source "$SCRIPT_DIR/.env"
+    set +a
+else
+    echo "Error: .env file not found at $SCRIPT_DIR/.env"
+    exit 1
+fi
 
 # Configuration
-MODEL="openrouter/qwen/qwen3-vl-235b-a22b-thinking"
+MODEL="openrouter/amazon/nova-2-lite-v1"
 CSV_FILE="results_$(date +%Y%m%d_%H%M%S).csv"
 LOG_DIR="logs"
 
 # SRE-skills-tasks
-#SUBTASKS="s3-security-mcq azure-network-mcq azure-compute-mcq azure-k8s-mcq gcp-network-mcq gcp-compute-mcq gcp-storage-mcq vpc-nat-mcq iam-mcq"
-SUBTASKS="s3-security-mcq"
+SUBTASKS="s3-security-mcq azure-network-mcq azure-compute-mcq azure-k8s-mcq gcp-network-mcq gcp-compute-mcq gcp-storage-mcq vpc-nat-mcq iam-mcq"
 
 # Temporary file to store results
 TEMP_RESULTS="/tmp/eval_results_$$.txt"
@@ -20,7 +26,7 @@ TEMP_RESULTS="/tmp/eval_results_$$.txt"
 
 # Extract accuracy from JSON log file
 extract_accuracy_from_log() {
-    local log_file=$
+    local log_file=$1
     python3 -c "
 import json
 import sys
