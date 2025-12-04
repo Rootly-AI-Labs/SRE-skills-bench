@@ -6,7 +6,7 @@ SRE-skills-bench evaluates LLMs on tasks commonly performed by Site Reliability 
 
 Read our latest findings with Gemini 3 Pro on our [blog post](https://rootly.com/blog/gemini-3-lead-in-sre-tasks).
 
-![image of graph showing accuracy vs price](static/SRE-skills-bench-results.png)
+![image of graph showing accuracy vs price](static/SRE-skills-bench-results.jpg)
 
 At the Rootly AI Labs, we run SRE-skills-bench on frontier models the day they are released, and we share our findings on our social media platforms ([LinkedIn](https://linkedin.com/company/rootlyhq/), [X](https://x.com/rootlyhq)). We also present our benchmarks at leading ML research conferences, including as workshop papers at NeurIPS, ICML, and ACL.
 

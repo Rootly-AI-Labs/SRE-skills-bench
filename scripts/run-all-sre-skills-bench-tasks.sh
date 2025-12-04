@@ -13,7 +13,7 @@ else
 fi
 
 # Configuration
-MODEL="openrouter/amazon/nova-2-lite-v1"
+MODEL="openrouter/openai/gpt-5-mini"
 CSV_FILE="results_$(date +%Y%m%d_%H%M%S).csv"
 LOG_DIR="logs"
 
@@ -110,16 +110,22 @@ for subtask in $SUBTASKS; do
 done
 printf "\n" >> "$CSV_FILE"
 
-# Clean up temp files
-rm -f "$TEMP_RESULTS"
-rm -f /tmp/timestamp_$$
-
 # Display summary
 echo ""
 echo "======================================"
 echo "EVALUATION COMPLETE"
 echo "======================================"
-echo "Results saved to: $CSV_FILE"
 echo ""
-echo "CSV Contents:"
-cat "$CSV_FILE"
+echo "Results:"
+echo ""
+for subtask in $SUBTASKS; do
+    accuracy=$(grep "^$subtask:" "$TEMP_RESULTS" | cut -d: -f2)
+    printf "%-25s: %s\n" "$subtask" "$accuracy"
+done
+echo ""
+echo "--------------------------------------"
+echo "Results saved to: $CSV_FILE"
+
+# Clean up temp files
+rm -f "$TEMP_RESULTS"
+rm -f /tmp/timestamp_$$
