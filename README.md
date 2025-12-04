@@ -82,10 +82,10 @@ This benchmark contains a wide array of scenarios, including compute, network, K
 
 
 ## 📰 News
-* **[Dec. 2, 2025]**: presenting our work at ER – NeurIPS in San Diego, USA.
-* **[Nov. 24, 2025]**: released ~3,000 new tasks testing LLMs on compute, network, and storage actions across AWS, GCP, and Azure.
-* **[Jul. 27, 2025]**: presented our work at KnowFM – ACL 2025 in Vienna, Austria.
-* **[Jul. 19, 2025]**: presented our work at New In ML – ICML 2025 in Vancouver, Canada.
+* **[Dec. 2, 2025]**: [presenting our work](https://x.com/LaurenceLiang1/status/1993446585062375710?s=20) at ER – NeurIPS in San Diego, USA.
+* **[Nov. 24, 2025]**: [released](https://rootly.com/blog/gemini-3-lead-in-sre-tasks) ~3,000 new tasks testing LLMs on compute, network, and storage actions across AWS, GCP, and Azure.
+* **[Jul. 27, 2025]**: [presented](https://x.com/LaurenceLiang1/status/1950315795248222646?s=20) our work at KnowFM – ACL 2025 in Vienna, Austria.
+* **[Jul. 19, 2025]**: [presented](https://www.linkedin.com/posts/rootlyhq_icml-last-week-was-packed-with-the-people-activity-7353091496885084160-Kg6h?utm_source=share&utm_medium=member_desktop&rcm=ACoAAADGnFABrpDYk0E2FAxG_0rQwv3fcQbkd7E) our work at New In ML – ICML 2025 in Vancouver, Canada.
 
 ## 🔗 About the Rootly AI Labs
 SRE-skills-bench is built with ❤️ by the [Rootly AI Labs](https://rootly.com/ai-labs) for engineering teams everywhere. The Rootly AI Labs is a fellow-led community designed to redefine reliability engineering. We develop innovative prototypes, create open-source tools, and produce research that's shared to advance the standards of operational excellence. We want to thank Anthropic, Google Cloud, and Google DeepMind for their support.
