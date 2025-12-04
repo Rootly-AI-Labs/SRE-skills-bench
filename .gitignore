@@ -1,3 +1,24 @@
+# Environment files
+.env
 scripts/.env
+
+# macOS
+.DS_Store
+.AppleDouble
+._*
+.Spotlight-V100
+.Trashes
+
+# Emacs
 *~
 *#
+\#*\#
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Logs
+*.log
