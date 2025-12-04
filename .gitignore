@@ -22,3 +22,4 @@ __pycache__/
 
 # Logs
 *.log
+script/logs/
