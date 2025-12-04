@@ -17,8 +17,8 @@ The table below represents the average accuracy of each model across all SRE-rel
 | Org | Model | SRE-skills-bench score | Token Cost (per M) | Run Date |
 |-----|-------|------------------------|---------------------------|------|
 | <img src="static/Google-Gemini.png" alt="Google" style="height:2em"> | gemini-3-pro 🏆 | 94.88% | $12.00 | Nov. 24, 2025 |
-| <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | opus-4.5 | 92.93% | - | - |
-| <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | sonnet-4.5 | 92.71% | $15.00 | Nov. 24, 2025 |
+| <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | opus-4.5 | 92.93% | - | Nov. 24, 2025 |
+| <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | sonnet-4.5 | 92.71% | $15.00 💸 | Nov. 24, 2025 |
 | <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.1 | 89.59% | $10.00 | Nov. 24, 2025 |
 | <img src="static/Qwen-AI.png" alt="Alibaba" style="height:2em"> | qwen3-vl-235b-a22b-thinking | 85.18% | $3.95 | Sept. 29, 2025 |
 | <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5 | - | $10.00 | Sept. 29, 2025 |
