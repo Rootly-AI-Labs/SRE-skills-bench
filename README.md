@@ -6,7 +6,7 @@ SRE-skills-bench evaluates LLMs on tasks commonly performed by Site Reliability 
 
 Read our latest findings with Gemini 3 Pro on our [blog post](https://rootly.com/blog/gemini-3-lead-in-sre-tasks).
 
-![image of graph showing accuracy vs price](static/benchmark_scatter_plots.png)
+![image of graph showing accuracy vs price](static/SRE-skills-bench-results.png)
 
 At the Rootly AI Labs, we run SRE-skills-bench on frontier models the day they are released, and we share our findings on our social media platforms ([LinkedIn](https://linkedin.com/company/rootlyhq/), [X](https://x.com/rootlyhq)). We also present our benchmarks at leading ML research conferences, including as workshop papers at NeurIPS, ICML, and ACL.
 
@@ -14,18 +14,20 @@ At the Rootly AI Labs, we run SRE-skills-bench on frontier models the day they a
 
 The table below represents the average accuracy of each model across all SRE-related tasks included in the benchmark.
 
-| Model | Output Token Cost (per M) | Rootly GMCQ | Azure K8s MCQ | S3 Security MCQ | Date |
-|-------|---------------------------|-------------|---------------|-----------------|------|
-| gemini-3-pro 🏆 | $12.00 | 89.7% | 95.3% | 95.7% | Nov. 24, 2025 |
-| gpt-5.1 | $10.00 | 89.2% | 90.2% | 82.6% | Nov. 24, 2025 |
-| sonnet-4.5 | $15.00 | 89.0% | 94.0% | 88.4% | Nov. 24, 2025 |
-| gpt-5 | $10.00 | 89.0% | 90.6% | 91.3% | Sept. 29, 2025 |
-| qwen3-vl-235b-a22b-thinking | $3.95 | 87.3% | 88.5% | 72.5% | Sept. 29, 2025 |
-| gpt-oss-120b | $0.50 | 84.3% | 70.1% | 59.4% | Sept. 29, 2025 |
-| nova-pro-1 | $3.20 | 83.3% | 64.5% | 42.0% | Sept. 29, 2025 |
-| glm-4.6 | $2.20 | 82.8% | 64.5% | 46.4% | Sept. 29, 2025 |
-| gpt-4.1 | $8.00 | 81.8% | 76.5% | 63.8% | Sept. 29, 2025 |
-| llama-4-maverick | $0.85 | 80.8% | 53.0% | 34.8% | Sept. 29, 2025 |
+| Org | Model | SRE-skills-bench score | Output Token Cost (per M) | Date |
+|-----|-------|------------------------|---------------------------|------|
+| <img src="static/Google-Gemini.png" alt="Google" style="height:2em"> | gemini-3-pro 🏆 | 94.88% | $12.00 | Nov. 24, 2025 |
+| <img src="static/Anthropic_Logo_Static.svg" alt="Anthropic" style="height:2em"> | opus-4.5 | 92.93% | - | - |
+| <img src="static/Anthropic_Logo_Static.svg" alt="Anthropic" style="height:2em"> | sonnet-4.5 | 92.71% | $15.00 | Nov. 24, 2025 |
+| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.1 | 89.59% | $10.00 | Nov. 24, 2025 |
+| <img src="static/Qwen-AI.png" alt="Alibaba" style="height:2em"> | qwen3-vl-235b-a22b-thinking | 85.18% | $3.95 | Sept. 29, 2025 |
+| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5 | - | $10.00 | Sept. 29, 2025 |
+| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-oss-120b | - | $0.50 | Sept. 29, 2025 |
+| <img src="static/AWS.png" alt="Amazon" style="height:2em"> | nova-pro-1 | - | $3.20 | Sept. 29, 2025 |
+| <img src="static/AWS.png" alt="Amazon" style="height:2em"> | nova-2-lite | 45.73% | - | - |
+| <img src="static/Zhipu-AI.png" alt="Zhipu AI" style="height:2em"> | glm-4.6 | - | $2.20 | Sept. 29, 2025 |
+| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-4.1 | - | $8.00 | Sept. 29, 2025 |
+| <img src="static/meta.png" alt="Meta" style="height:2em"> | llama-4-maverick | - | $0.85 | Sept. 29, 2025 |
 
 ## Getting Started
 
