@@ -69,7 +69,7 @@ Each task category includes multiple test cases with expected outputs, graded pr
 
 ### GitHub Multiple Choice Questions Benchmark (GMCQ)
 
-GMCQ evaluates a model's ability to understand code changes during pull requests, which can assist SREs during rapid responses to critical incidents. GMCQ's dataset consists of real-world pull requests and code diffs from six popular GitHub repositories that actively publish new version releases. Each question consists of a real pull request's issue description, and four choices of real code diffs all sourced from the same repository. Only one code diff corresponds to that specific pull request, and the model must be able to identify the correct code diff. To achieve a strong performance on this benchark, the model must be capable of understanding code functionality when given textual instructions and limited context. 
+GMCQ evaluates a model's ability to understand code changes during pull requests, which can assist SREs during rapid responses to critical incidents. GMCQ's dataset consists of real-world pull requests and code diffs from six popular GitHub repositories that actively publish new version releases. Each question consists of a real pull request's issue description, and four choices of real code diffs, all sourced from the same repository. Only one code diff corresponds to that specific pull request, and the model must be able to identify the correct code diff. To achieve a strong performance on this benchmark, the model must be capable of understanding code functionality when given textual instructions and limited context. 
 
 This GMCQ benchmark was presented by the Rootly AI Labs as a workshop paper at ICML 2025 and ACL 2025.
 
@@ -78,16 +78,14 @@ This GMCQ benchmark was presented by the Rootly AI Labs as a workshop paper at I
 
 This benchmark evaluates a model's ability to understand common code requests for SREs. Each question in this benchmark provides the model with a specific request and presents 4 code diffs of Terraform code and instructions that resolve similar requests. The model must select the correct choice of code diff.
 
-This benchmark contains a wide array of scenarios, including compute, network, kubernetes and security requests on AWS, GCP and Azure. For a model to perform well on this benchmark, it must be able to demonstrate generalizable understanding of SRE requests across a wide array of tasks and target platforms, making this benchmark relevant to determine relevant models that can assist SREs in their day-to-day work.
+This benchmark contains a wide array of scenarios, including compute, network, Kubernetes, and security requests on AWS, GCP, and Azure. For a model to perform well on this benchmark, it must be able to demonstrate a generalizable understanding of SRE requests across a wide array of tasks and target platforms, making this benchmark relevant to determine relevant models that can assist SREs in their day-to-day work.
 
 
-## Where we share our findings
-
-|Conference Name| Date|
-|--- | --- |
-| ER @ NeurIPS | Dec. 2-7, 2025 |
-| KnowFM @ ACL 2025 | July 27 to Aug. 1, 2025 |
-| New In ML @ ICML 2025 | July 13-19, 2025 |
+## 📰 News
+* **[Dec. 2, 2025]**: presenting our work at ER – NeurIPS in San Diego, USA.
+* **[Nov. 24, 2025]**: released ~3,000 new tasks testing LLMs on compute, network, and storage actions across AWS, GCP, and Azure.
+* **[Jul. 27, 2025]**: presented our work at KnowFM – ACL 2025 in Vienna, Austria.
+* **[Jul. 19, 2025]**: presented our work at New In ML – ICML 2025 in Vancouver, Canada.
 
 ## 🔗 About the Rootly AI Labs
 SRE-skills-bench is built with ❤️ by the [Rootly AI Labs](https://rootly.com/ai-labs) for engineering teams everywhere. The Rootly AI Labs is a fellow-led community designed to redefine reliability engineering. We develop innovative prototypes, create open-source tools, and produce research that's shared to advance the standards of operational excellence. We want to thank Anthropic, Google Cloud, and Google DeepMind for their support.
