@@ -14,18 +14,18 @@ At the Rootly AI Labs, we run SRE-skills-bench on frontier models the day they a
 
 The table below represents the average accuracy of each model across all SRE-related tasks included in the benchmark.
 
-| Model | Output Token Cost (per M) | Rootly GMCQ | Azure K8s MCQ | S3 Security MCQ |
-|-------|---------------------------|-------------|---------------|-----------------|
-| gemini-3-pro 🏆 | $12.00 | 89.7% | 95.3% | 95.7% |
-| gpt-5.1 | $10.00 | 89.2% | 90.2% | 82.6% |
-| sonnet-4.5 | $15.00 | 89.0% | 94.0% | 88.4% |
-| gpt-5 | $10.00 | 89.0% | 90.6% | 91.3% |
-| qwen3-vl-235b-a22b-thinking | $3.95 | 87.3% | 88.5% | 72.5% |
-| gpt-oss-120b | $0.50 | 84.3% | 70.1% | 59.4% |
-| nova-pro-1 | $3.20 | 83.3% | 64.5% | 42.0% |
-| glm-4.6 | $2.20 | 82.8% | 64.5% | 46.4% |
-| gpt-4.1 | $8.00 | 81.8% | 76.5% | 63.8% |
-| llama-4-maverick | $0.85 | 80.8% | 53.0% | 34.8% |
+| Model | Output Token Cost (per M) | Rootly GMCQ | Azure K8s MCQ | S3 Security MCQ | Date |
+|-------|---------------------------|-------------|---------------|-----------------|------|
+| gemini-3-pro 🏆 | $12.00 | 89.7% | 95.3% | 95.7% | Nov. 24, 2025 |
+| gpt-5.1 | $10.00 | 89.2% | 90.2% | 82.6% | Nov. 24, 2025 |
+| sonnet-4.5 | $15.00 | 89.0% | 94.0% | 88.4% | Nov. 24, 2025 |
+| gpt-5 | $10.00 | 89.0% | 90.6% | 91.3% | Sept. 29, 2025 |
+| qwen3-vl-235b-a22b-thinking | $3.95 | 87.3% | 88.5% | 72.5% | Sept. 29, 2025 |
+| gpt-oss-120b | $0.50 | 84.3% | 70.1% | 59.4% | Sept. 29, 2025 |
+| nova-pro-1 | $3.20 | 83.3% | 64.5% | 42.0% | Sept. 29, 2025 |
+| glm-4.6 | $2.20 | 82.8% | 64.5% | 46.4% | Sept. 29, 2025 |
+| gpt-4.1 | $8.00 | 81.8% | 76.5% | 63.8% | Sept. 29, 2025 |
+| llama-4-maverick | $0.85 | 80.8% | 53.0% | 34.8% | Sept. 29, 2025 |
 
 ## Getting Started
 
