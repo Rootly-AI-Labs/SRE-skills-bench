@@ -18,7 +18,7 @@ CSV_FILE="results_$(date +%Y%m%d_%H%M%S).csv"
 LOG_DIR="logs"
 
 # SRE-skills-tasks
-SUBTASKS="s3-security-mcq azure-network-mcq azure-compute-mcq azure-k8s-mcq gcp-network-mcq gcp-compute-mcq gcp-storage-mcq vpc-nat-mcq iam-mcq"
+SUBTASKS="s3-security-mcq azure-network-mcq azure-compute-mcq azure-k8s-mcq gcp-network-mcq gcp-compute-mcq gcp-storage-mcq vpc-nat-mcq iam-mcq rootly_gmcq"
 
 # Temporary file to store results
 TEMP_RESULTS="/tmp/eval_results_$$.txt"
@@ -56,12 +56,11 @@ run_eval() {
     echo ""
 
     # Run the evaluation with --log-format json (shows progress bars in real-time)
-    uv run openbench eval rootly_terraform \
+    uv run openbench eval "$subtask" \
         --model "$MODEL" \
         --reasoning-effort "high" \
         --max-connections 35 \
-        --log-format json \
-        -T subtask="$subtask"
+        --log-format json
 
     # Find the most recent log file in logs/ directory
     local log_file=$(find "$LOG_DIR" -name "*.json" -newer /tmp/timestamp_$$ 2>/dev/null | sort -r | head -n1)
