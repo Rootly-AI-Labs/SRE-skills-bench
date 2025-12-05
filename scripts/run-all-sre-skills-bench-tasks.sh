@@ -13,12 +13,15 @@ else
 fi
 
 # Configuration
-MODEL="openrouter/openai/gpt-5-mini"
-CSV_FILE="results_$(date +%Y%m%d_%H%M%S).csv"
+MODEL="openrouter/openai/gpt-oss-120b"
 LOG_DIR="logs"
+CSV_FILE="$LOG_DIR/results_$(date +%Y%m%d_%H%M%S).csv"
 
-# SRE-skills-tasks
-SUBTASKS="s3-security-mcq azure-network-mcq azure-compute-mcq azure-k8s-mcq gcp-network-mcq gcp-compute-mcq gcp-storage-mcq vpc-nat-mcq iam-mcq rootly_gmcq"
+# Terraform subtasks (run via rootly_terraform -T subtask=X)
+TERRAFORM_SUBTASKS="s3-security-mcq azure-network-mcq azure-compute-mcq azure-k8s-mcq gcp-network-mcq gcp-compute-mcq gcp-storage-mcq vpc-nat-mcq iam-mcq"
+
+# Standalone benchmarks
+STANDALONE_BENCHMARKS="rootly_gmcq"
 
 # Temporary file to store results
 TEMP_RESULTS="/tmp/eval_results_$$.txt"
@@ -39,7 +42,7 @@ try:
         metrics = scores[0].get('metrics', {})
         accuracy = metrics.get('accuracy', {}).get('value')
         if accuracy is not None:
-            print(f'{accuracy:.2f}')
+            print(int(accuracy * 100))
             sys.exit(0)
     sys.exit(1)
 except:
@@ -47,20 +50,46 @@ except:
 "
 }
 
-# Function to run eval and capture accuracy
-run_eval() {
+# Function to run terraform subtask eval
+run_terraform_eval() {
     local subtask=$1
     local before_time=$(date +%s)
 
-    echo "Running evaluation for: $subtask"
+    echo "Running evaluation for: rootly_terraform (subtask: $subtask)"
     echo ""
 
     # Run the evaluation with --log-format json (shows progress bars in real-time)
-    uv run openbench eval "$subtask" \
+    uv run openbench eval rootly_terraform \
         --model "$MODEL" \
         --reasoning-effort "high" \
-        --max-connections 35 \
+        --max-connections 5 \
+        --log-format json \
+        -T subtask="$subtask"
+
+    extract_and_save_accuracy "$subtask"
+}
+
+# Function to run standalone benchmark eval
+run_standalone_eval() {
+    local benchmark=$1
+    local before_time=$(date +%s)
+
+    echo "Running evaluation for: $benchmark"
+    echo ""
+
+    # Run the evaluation with --log-format json (shows progress bars in real-time)
+    uv run openbench eval "$benchmark" \
+        --model "$MODEL" \
+        --reasoning-effort "high" \
+        --max-connections 5 \
         --log-format json
+
+    extract_and_save_accuracy "$benchmark"
+}
+
+# Function to extract accuracy and save results
+extract_and_save_accuracy() {
+    local task_name=$1
 
     # Find the most recent log file in logs/ directory
     local log_file=$(find "$LOG_DIR" -name "*.json" -newer /tmp/timestamp_$$ 2>/dev/null | sort -r | head -n1)
@@ -74,16 +103,16 @@ run_eval() {
     if [ -n "$log_file" ] && [ -f "$log_file" ]; then
         accuracy=$(extract_accuracy_from_log "$log_file")
         if [ -n "$accuracy" ]; then
-            echo "$subtask:$accuracy" >> "$TEMP_RESULTS"
+            echo "$task_name:$accuracy" >> "$TEMP_RESULTS"
             echo ""
-            echo "✓ Captured accuracy for $subtask: $accuracy"
+            echo "✓ Captured accuracy for $task_name: $accuracy"
         else
-            echo "$subtask:ERROR" >> "$TEMP_RESULTS"
+            echo "$task_name:ERROR" >> "$TEMP_RESULTS"
             echo ""
             echo "✗ ERROR: Could not extract accuracy from log file"
         fi
     else
-        echo "$subtask:ERROR" >> "$TEMP_RESULTS"
+        echo "$task_name:ERROR" >> "$TEMP_RESULTS"
         echo ""
         echo "✗ ERROR: Could not find log file"
     fi
@@ -93,18 +122,26 @@ run_eval() {
 # Create timestamp file for finding new logs
 touch /tmp/timestamp_$$
 
-# Run evaluations for all subtasks
-for subtask in $SUBTASKS; do
-    run_eval "$subtask"
+# Run evaluations for terraform subtasks
+for subtask in $TERRAFORM_SUBTASKS; do
+    run_terraform_eval "$subtask"
 done
+
+# Run evaluations for standalone benchmarks
+for benchmark in $STANDALONE_BENCHMARKS; do
+    run_standalone_eval "$benchmark"
+done
+
+# Combine all tasks for CSV and summary
+ALL_TASKS="$TERRAFORM_SUBTASKS $STANDALONE_BENCHMARKS"
 
 # Generate CSV file
 # Data row: execution date + model name + accuracy scores
 EXEC_DATE=$(date +%Y-%m-%d)
 printf "%s,%s" "$EXEC_DATE" "$MODEL" > "$CSV_FILE"
-for subtask in $SUBTASKS; do
-    # Extract accuracy for this subtask from temp file
-    accuracy=$(grep "^$subtask:" "$TEMP_RESULTS" | cut -d: -f2)
+for task in $ALL_TASKS; do
+    # Extract accuracy for this task from temp file
+    accuracy=$(grep "^$task:" "$TEMP_RESULTS" | cut -d: -f2)
     printf ",%s" "$accuracy" >> "$CSV_FILE"
 done
 printf "\n" >> "$CSV_FILE"
@@ -117,9 +154,9 @@ echo "======================================"
 echo ""
 echo "Results:"
 echo ""
-for subtask in $SUBTASKS; do
-    accuracy=$(grep "^$subtask:" "$TEMP_RESULTS" | cut -d: -f2)
-    printf "%-25s: %s\n" "$subtask" "$accuracy"
+for task in $ALL_TASKS; do
+    accuracy=$(grep "^$task:" "$TEMP_RESULTS" | cut -d: -f2)
+    printf "%-25s: %s\n" "$task" "$accuracy"
 done
 echo ""
 echo "--------------------------------------"
