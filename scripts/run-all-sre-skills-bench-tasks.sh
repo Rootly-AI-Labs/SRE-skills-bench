@@ -18,10 +18,10 @@ LOG_DIR="logs"
 CSV_FILE="$LOG_DIR/results_$(date +%Y%m%d_%H%M%S).csv"
 
 # Terraform subtasks (run via rootly_terraform -T subtask=X)
-TERRAFORM_SUBTASKS="s3-security-mcq azure-network-mcq azure-compute-mcq azure-k8s-mcq gcp-network-mcq gcp-compute-mcq gcp-storage-mcq vpc-nat-mcq iam-mcq"
+TERRAFORM_SUBTASKS="aws-s3 azure-network azure-compute azure-kubernetes gcp-network gcp-compute gcp-storage aws-vpc aws-iam"
 
 # Standalone benchmarks
-STANDALONE_BENCHMARKS="rootly_gmcq"
+STANDALONE_BENCHMARKS="pull-request-understanding"
 
 # Temporary file to store results
 TEMP_RESULTS="/tmp/eval_results_$$.txt"
