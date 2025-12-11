@@ -24,15 +24,8 @@ The table below represents the average accuracy of each model across all SRE-rel
 | <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | sonnet-4.5 | 92.71% | $15.00  | Nov. 24, 2025 |
 | <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.1-codex-max | 92.50% | $10.00 | Dec. 10, 2025 |
 | <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.1 | 89.59% | $10.00 | Nov. 24, 2025 |
-| <img src="static/Qwen-AI.png" alt="Alibaba" style="height:2em"> | qwen3-vl-235b-a22b-thinking | 85.18% | $8.40 | Sept. 29, 2025 |
-| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5 | - | $10.00 | Sept. 29, 2025 |
-| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-oss-120b | - | $0.50 | Sept. 29, 2025 |
-| <img src="static/AWS.png" alt="Amazon" style="height:2em"> | nova-pro-1 | - | $3.20 | Sept. 29, 2025 |
-| <img src="static/mistral-logo.png" alt="Mistral" style="height:2em"> | devstral-2512 | 64.80% | $0.60 | Dec. 11, 2025 |
-| <img src="static/AWS.png" alt="Amazon" style="height:2em"> | nova-2-lite | 45.73% | - | - |
-| <img src="static/Zhipu-AI.png" alt="Zhipu AI" style="height:2em"> | glm-4.6 | - | $2.20 | Sept. 29, 2025 |
-| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-4.1 | - | $8.00 | Sept. 29, 2025 |
-| <img src="static/meta.png" alt="Meta" style="height:2em"> | llama-4-maverick | - | $0.85 | Sept. 29, 2025 |
+
+**👉 Visit our website [sreskillsbench.com](https://sreskillsbench.com/) to have access to all the findings.**
 
 ## 📰 News
 * **[Dec. 2, 2025]**: [presenting our work](https://x.com/LaurenceLiang1/status/1993446585062375710?s=20) at ER – NeurIPS in San Diego, USA.
