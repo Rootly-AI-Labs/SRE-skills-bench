@@ -28,6 +28,7 @@ The table below represents the average accuracy of each model across all SRE-rel
 | <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5 | - | $10.00 | Sept. 29, 2025 |
 | <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-oss-120b | - | $0.50 | Sept. 29, 2025 |
 | <img src="static/AWS.png" alt="Amazon" style="height:2em"> | nova-pro-1 | - | $3.20 | Sept. 29, 2025 |
+| <img src="static/mistral-logo.png" alt="Mistral" style="height:2em"> | devstral-2512 | 64.80% | $0.60 | Dec. 11, 2025 |
 | <img src="static/AWS.png" alt="Amazon" style="height:2em"> | nova-2-lite | 45.73% | - | - |
 | <img src="static/Zhipu-AI.png" alt="Zhipu AI" style="height:2em"> | glm-4.6 | - | $2.20 | Sept. 29, 2025 |
 | <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-4.1 | - | $8.00 | Sept. 29, 2025 |
