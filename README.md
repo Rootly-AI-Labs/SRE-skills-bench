@@ -1,9 +1,13 @@
 # SRE-skills-bench
 
+<h2 align="center">
+ <br>
+ <img src="static/SRE-skills-bench-logo.jpg" alt="SRE-skills-bench" width="250">
+</h2>
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
-> *Benchmarks LLMs on SRE-type tasks!*
+> *Can Language Models Resolve SRE Tasks?*
 
 SRE-skills-bench evaluates LLMs on tasks commonly performed by Site Reliability Engineers, helping reliability practitioners choose the right model for the job, whether it's powering IDE assistants, automating operational workflows, or improving incident response. Think of SRE-skills-bench as the SWE-bench of Site Reliability Engineering. 
 
