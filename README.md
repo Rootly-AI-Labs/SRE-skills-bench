@@ -2,7 +2,7 @@
 
 <h2 align="center">
  <br>
- <img src="static/SRE-skills-bench-logo.jpg" alt="SRE-skills-bench" width="250">
+ <img src="static/SRE-skills-bench-logo.png" alt="SRE-skills-bench">
 </h2>
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
