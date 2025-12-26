@@ -42,6 +42,21 @@ The table below represents the average accuracy of each model across all SRE-rel
 
 To reproduce our results or use our benchmark to benchmark other models.
 
+### Prerequisites
+
+This project uses [mise](https://mise.jdx.dev/) for tool version management.
+
+```bash
+# Install mise (if not already installed)
+curl https://mise.run | sh
+
+# Install required tools
+mise trust
+mise install
+```
+
+### Running the Benchmark
+
 ```bash
 # Create a virtual environment and install OpenBench
 uv venv

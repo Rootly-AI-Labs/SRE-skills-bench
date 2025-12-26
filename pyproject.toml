@@ -1,7 +1,7 @@
 [project]
 name = "sre-skills-bench"
 version = "0.1.0"
-description = "Add your description here"
+description = "Benchmark suite for evaluating LLMs on Site Reliability Engineering tasks"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
