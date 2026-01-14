@@ -1,0 +1,14 @@
+id: task_s3_public_access_block
+region: us-east-1
+vars:
+  bucket_name: "sre-skills-bench-public-access-test"
+  block_public_acls: true
+  block_public_policy: true
+  ignore_public_acls: true
+  restrict_public_buckets: true
+checks:
+  bucket_count: 1
+  public_access_block_count: 1
+  wiring:
+    - public access block attached to bucket
+

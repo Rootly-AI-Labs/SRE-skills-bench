@@ -1,0 +1,14 @@
+id: task_s3_cors_configuration
+region: us-east-1
+vars:
+  bucket_name: "sre-skills-bench-cors-test"
+  allowed_origin: "https://example.com"
+  allowed_methods:
+    - "GET"
+    - "POST"
+checks:
+  bucket_count: 1
+  cors_configuration_count: 1
+  wiring:
+    - cors configuration attached to bucket
+

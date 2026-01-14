@@ -1,0 +1,15 @@
+id: task_security_group_complex
+region: us-east-1
+vars:
+  vpc_cidr: "10.1.0.0/16"
+  allowed_ssh_cidr: "0.0.0.0/0"
+  allowed_http_cidr: "10.1.0.0/16"
+checks:
+  vpc_count: 1
+  security_group_count: 1
+  ingress_rule_count: 2
+  egress_rule_count: 1
+  wiring:
+    - security group in vpc
+    - ingress rules configured correctly
+

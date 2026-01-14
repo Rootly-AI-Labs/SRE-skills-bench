@@ -1,0 +1,19 @@
+id: task_vpc_nat_gateway
+region: us-east-1
+vars:
+  vpc_cidr: "10.3.0.0/16"
+  public_subnet_cidr: "10.3.1.0/24"
+  private_subnet_cidr: "10.3.2.0/24"
+checks:
+  vpc_count: 1
+  internet_gateway_count: 1
+  nat_gateway_count: 1
+  public_subnet_count: 1
+  private_subnet_count: 1
+  public_route_table_count: 1
+  private_route_table_count: 1
+  wiring:
+    - nat gateway in public subnet
+    - private route table has route to nat gateway
+    - public route table has route to internet gateway
+

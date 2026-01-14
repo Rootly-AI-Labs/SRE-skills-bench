@@ -1,0 +1,31 @@
+You are generating Terraform code. Create EXACTLY three files: main.tf, variables.tf, outputs.tf.
+
+Requirements:
+- Terraform >= 1.5
+- Provider: hashicorp/aws
+- Must work with LocalStack at http://localhost:4566
+  Configure provider endpoints for iam, sts to http://localhost:4566 and set:
+  skip_credentials_validation=true
+  skip_metadata_api_check=true
+  skip_requesting_account_id=true
+  s3_use_path_style=true
+- Variables (ALL must have default values to avoid interactive prompts):
+  region (string, default = "us-east-1")
+  role_name (string)
+  policy_name (string)
+- Create:
+  1 IAM Role with name = var.role_name
+    Trust policy must allow EC2 service to assume the role (principal: ec2.amazonaws.com)
+  1 IAM Policy with name = var.policy_name
+    Policy document should allow: s3:GetObject and s3:ListBucket on all resources
+  1 IAM Role Policy Attachment to attach the policy to the role
+- Tag all resources:
+  project = "sre-skills-bench"
+  task_id = "task_iam_role_policy"
+- Outputs:
+  role_id
+  role_arn
+  policy_arn
+
+Return ONLY code blocks, one per file, labeled with the filename.
+
