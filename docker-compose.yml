@@ -1,0 +1,23 @@
+services:
+  localstack:
+    image: localstack/localstack:3.0
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=ec2,iam,sts,s3
+      - DEBUG=0
+      - DATA_DIR=/var/lib/localstack/data
+      - PERSISTENCE=0
+      - EC2_SKIP_IMDS_VALIDATION=1
+      - SKIP_INFRA_DOWNLOADS=1
+      - LAMBDA_EXECUTOR=local
+      - EC2_INSTANCE_CREATE_TIMEOUT=5
+      - EC2_INSTANCE_START_TIMEOUT=5
+    volumes:
+      - "./localstack-data:/var/lib/localstack"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+

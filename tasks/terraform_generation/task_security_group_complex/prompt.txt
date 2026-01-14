@@ -1,0 +1,32 @@
+You are generating Terraform code. Create EXACTLY three files: main.tf, variables.tf, outputs.tf.
+
+Requirements:
+- Terraform >= 1.5
+- Provider: hashicorp/aws
+- Must work with LocalStack at http://localhost:4566
+  Configure provider endpoints for ec2, iam, sts to http://localhost:4566 and set:
+  skip_credentials_validation=true
+  skip_metadata_api_check=true
+  skip_requesting_account_id=true
+  s3_use_path_style=true
+- Variables (ALL must have default values to avoid interactive prompts):
+  region (string, default = "us-east-1")
+  vpc_cidr (string)
+  allowed_ssh_cidr (string)
+  allowed_http_cidr (string)
+- Create:
+  1 VPC with CIDR = var.vpc_cidr
+  1 Security Group in that VPC with:
+    - Ingress rule: SSH (port 22) from var.allowed_ssh_cidr
+    - Ingress rule: HTTP (port 80) from var.allowed_http_cidr
+    - Egress rule: Allow all outbound traffic (0.0.0.0/0)
+- Tag all resources:
+  project = "sre-skills-bench"
+  task_id = "task_security_group_complex"
+- Outputs:
+  vpc_id
+  security_group_id
+  security_group_arn
+
+Return ONLY code blocks, one per file, labeled with the filename.
+
