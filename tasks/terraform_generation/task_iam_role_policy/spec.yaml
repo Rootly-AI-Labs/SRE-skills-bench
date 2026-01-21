@@ -1,0 +1,13 @@
+id: task_iam_role_policy
+region: us-east-1
+vars:
+  role_name: "sre-skills-bench-ec2-role"
+  policy_name: "sre-skills-bench-s3-read-policy"
+checks:
+  role_count: 1
+  policy_count: 1
+  role_policy_attachment_count: 1
+  wiring:
+    - policy attached to role
+    - trust policy allows ec2 service
+

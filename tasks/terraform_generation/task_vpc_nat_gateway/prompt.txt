@@ -1,0 +1,44 @@
+You are generating Terraform code. Create EXACTLY three files: main.tf, variables.tf, outputs.tf.
+
+Requirements:
+- Terraform >= 1.5
+- Provider: hashicorp/aws
+- Must work with LocalStack at http://localhost:4566
+  Configure provider endpoints for ec2, iam, sts to http://localhost:4566 and set:
+  skip_credentials_validation=true
+  skip_metadata_api_check=true
+  skip_requesting_account_id=true
+  s3_use_path_style=true
+- Variables:
+  region (string)
+  vpc_cidr (string)
+  public_subnet_cidr (string)
+  private_subnet_cidr (string)
+- Create:
+  1 VPC with CIDR = var.vpc_cidr
+  1 Internet Gateway attached to the VPC
+  1 Public Subnet with CIDR = var.public_subnet_cidr
+    Set map_public_ip_on_launch = true
+  1 Private Subnet with CIDR = var.private_subnet_cidr
+    Set map_public_ip_on_launch = false
+  1 Elastic IP for NAT Gateway
+  1 NAT Gateway in the public subnet using the Elastic IP
+  1 Public Route Table with default route (0.0.0.0/0) to Internet Gateway
+    Associate the public subnet with this route table
+  1 Private Route Table with default route (0.0.0.0/0) to NAT Gateway
+    Associate the private subnet with this route table
+- Tag all resources:
+  project = "sre-skills-bench"
+  task_id = "task_vpc_nat_gateway"
+- Outputs:
+  vpc_id
+  internet_gateway_id
+  nat_gateway_id
+  elastic_ip_id
+  public_subnet_id
+  private_subnet_id
+  public_route_table_id
+  private_route_table_id
+
+Return ONLY code blocks, one per file, labeled with the filename.
+

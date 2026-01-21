@@ -1,0 +1,17 @@
+id: task_vpc_multiple_route_tables
+region: us-east-1
+vars:
+  vpc_cidr: "10.5.0.0/16"
+  subnet_cidrs:
+    - "10.5.1.0/24"
+    - "10.5.2.0/24"
+    - "10.5.3.0/24"
+checks:
+  vpc_count: 1
+  internet_gateway_count: 1
+  subnet_count: 3
+  route_table_count: 2
+  wiring:
+    - each subnet associated with a route table
+    - route tables have different routes
+

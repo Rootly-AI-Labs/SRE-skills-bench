@@ -1,0 +1,35 @@
+You are generating Terraform code. Create EXACTLY three files: main.tf, variables.tf, outputs.tf.
+
+Requirements:
+- Terraform >= 1.5
+- Provider: hashicorp/aws
+- Must work with LocalStack at http://localhost:4566
+  Configure provider endpoints for s3, iam, sts to http://localhost:4566 and set:
+  skip_credentials_validation=true
+  skip_metadata_api_check=true
+  skip_requesting_account_id=true
+  s3_use_path_style=true
+- Variables (ALL must have default values to avoid interactive prompts):
+  region (string, default = "us-east-1")
+  bucket_name (string)
+  block_public_acls (bool)
+  block_public_policy (bool)
+  ignore_public_acls (bool)
+  restrict_public_buckets (bool)
+- Create:
+  1 S3 bucket with name = var.bucket_name
+  1 S3 Public Access Block resource attached to the bucket
+    Configure all four settings from variables:
+    - block_public_acls = var.block_public_acls
+    - block_public_policy = var.block_public_policy
+    - ignore_public_acls = var.ignore_public_acls
+    - restrict_public_buckets = var.restrict_public_buckets
+- Tag all resources:
+  project = "sre-skills-bench"
+  task_id = "task_s3_public_access_block"
+- Outputs:
+  bucket_id
+  bucket_arn
+
+Return ONLY code blocks, one per file, labeled with the filename.
+

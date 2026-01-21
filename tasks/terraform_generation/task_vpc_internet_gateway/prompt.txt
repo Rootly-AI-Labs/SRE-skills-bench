@@ -1,0 +1,35 @@
+You are generating Terraform code. Create EXACTLY three files: main.tf, variables.tf, outputs.tf.
+
+Requirements:
+- Terraform >= 1.5
+- Provider: hashicorp/aws
+- Must work with LocalStack at http://localhost:4566
+  Configure provider endpoints for ec2, iam, sts to http://localhost:4566 and set:
+  skip_credentials_validation=true
+  skip_metadata_api_check=true
+  skip_requesting_account_id=true
+  s3_use_path_style=true
+- Variables:
+  region (string)
+  vpc_cidr (string)
+  subnet_cidr (string)
+- Create:
+  1 VPC with CIDR = var.vpc_cidr
+  1 Internet Gateway
+    Attach the Internet Gateway to the VPC
+  1 Public Subnet with CIDR = var.subnet_cidr in the VPC
+    Set map_public_ip_on_launch = true
+  1 Route Table in the VPC
+    Add default route (0.0.0.0/0) to the Internet Gateway
+    Associate the subnet with this route table
+- Tag all resources:
+  project = "sre-skills-bench"
+  task_id = "task_vpc_internet_gateway"
+- Outputs:
+  vpc_id
+  internet_gateway_id
+  route_table_id
+  subnet_id
+
+Return ONLY code blocks, one per file, labeled with the filename.
+

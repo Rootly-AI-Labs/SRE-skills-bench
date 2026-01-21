@@ -1,0 +1,13 @@
+id: task_s3_lifecycle_versioning
+region: us-east-1
+vars:
+  bucket_name: "sre-skills-bench-lifecycle-test"
+  versioning_enabled: true
+  lifecycle_days: 30
+checks:
+  bucket_count: 1
+  versioning_enabled: true
+  lifecycle_rule_count: 1
+  wiring:
+    - lifecycle rule attached to bucket
+

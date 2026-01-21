@@ -1,0 +1,15 @@
+id: task_vpc_internet_gateway
+region: us-east-1
+vars:
+  vpc_cidr: "10.2.0.0/16"
+  subnet_cidr: "10.2.1.0/24"
+checks:
+  vpc_count: 1
+  internet_gateway_count: 1
+  route_table_count: 1
+  subnet_count: 1
+  wiring:
+    - internet gateway attached to vpc
+    - route table has default route to internet gateway
+    - subnet associated with route table
+

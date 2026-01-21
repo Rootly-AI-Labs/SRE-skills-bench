@@ -1,0 +1,17 @@
+id: task_ec2_instance_profile
+region: us-east-1
+vars:
+  vpc_cidr: "10.4.0.0/16"
+  subnet_cidr: "10.4.1.0/24"
+  instance_type: "t2.micro"
+  role_name: "sre-skills-bench-ec2-role"
+checks:
+  vpc_count: 1
+  subnet_count: 1
+  instance_count: 1
+  iam_role_count: 1
+  instance_profile_count: 1
+  wiring:
+    - instance profile attached to instance
+    - role attached to instance profile
+

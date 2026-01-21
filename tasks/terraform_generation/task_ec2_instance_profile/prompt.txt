@@ -1,0 +1,40 @@
+You are generating Terraform code. Create EXACTLY three files: main.tf, variables.tf, outputs.tf.
+
+Requirements:
+- Terraform >= 1.5
+- Provider: hashicorp/aws
+- Must work with LocalStack at http://localhost:4566
+  Configure provider endpoints for ec2, iam, sts to http://localhost:4566 and set:
+  skip_credentials_validation=true
+  skip_metadata_api_check=true
+  skip_requesting_account_id=true
+  s3_use_path_style=true
+- Variables (ALL must have default values to avoid interactive prompts):
+  region (string, default = "us-east-1")
+  vpc_cidr (string)
+  subnet_cidr (string)
+  instance_type (string)
+  role_name (string)
+- Create:
+  1 VPC with CIDR = var.vpc_cidr
+  1 Subnet with CIDR = var.subnet_cidr in the VPC
+  1 IAM Role with name = var.role_name
+    Trust policy must allow EC2 service to assume the role (principal: ec2.amazonaws.com)
+  1 IAM Instance Profile with the same name as the role
+    Attach the IAM Role to the Instance Profile
+  1 EC2 Instance in the subnet
+    Use instance_type = var.instance_type
+    Use ami = "ami-12345678" (LocalStack accepts any AMI ID)
+    Attach the instance profile using iam_instance_profile attribute
+- Tag all resources:
+  project = "sre-skills-bench"
+  task_id = "task_ec2_instance_profile"
+- Outputs:
+  vpc_id
+  subnet_id
+  instance_id
+  iam_role_arn
+  instance_profile_arn
+
+Return ONLY code blocks, one per file, labeled with the filename.
+

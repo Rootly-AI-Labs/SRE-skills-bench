@@ -1,0 +1,11 @@
+id: task_s3_bucket_policy
+region: us-east-1
+vars:
+  bucket_name: "sre-skills-bench-policy-test"
+  allowed_principal_arn: "arn:aws:iam::123456789012:user/test-user"
+checks:
+  bucket_count: 1
+  bucket_policy_count: 1
+  wiring:
+    - bucket policy attached to bucket
+

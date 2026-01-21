@@ -104,5 +104,47 @@ This benchmark evaluates a model's ability to understand common code requests fo
 
 This benchmark contains a wide array of scenarios, including compute, network, Kubernetes, and security requests on AWS, GCP, and Azure. For a model to perform well on this benchmark, it must be able to demonstrate a generalizable understanding of SRE requests across a wide array of tasks and target platforms, making this benchmark relevant to determine relevant models that can assist SREs in their day-to-day work.
 
+### Terraform Generation Benchmark
+
+This benchmark evaluates a model's ability to **generate executable Terraform code** from natural language prompts. Unlike the multiple-choice Terraform SRE Benchmark, this tests end-to-end code generation and execution.
+
+**Key Features:**
+- **11 real-world Terraform tasks** covering VPC, EC2, S3, IAM, and Security Groups
+- **Full Terraform lifecycle testing** (fmt, init, validate, plan, apply, destroy)
+- **LocalStack integration** for safe, reproducible testing without real AWS resources
+- **Comprehensive reporting** with failure categorization (SYNTAX, INIT, VALIDATE, PLAN, APPLY, etc.)
+- **Multi-provider LLM support** (OpenAI, Anthropic, OpenRouter)
+
+**Usage:**
+```bash
+# Install dependencies
+uv pip install -e ".[terraform-generation]"
+
+# Start LocalStack (required)
+docker compose up -d
+
+# Set API keys
+export OPENAI_API_KEY=your_key
+export ANTHROPIC_API_KEY=your_key
+export OPENROUTER_API_KEY=your_key  # Optional
+
+# Run benchmark
+./scripts/run-terraform-generation-bench.sh
+
+# Or use the CLI directly
+python -m terraform_generation_bench.benchmark_cli suite \
+  --models models.json \
+  --tasks all \
+  --runs-per-model 1
+```
+
+**Findings:**
+- Most models (99%) successfully generate code, but fail during Terraform execution
+- Common failure points: INIT (33%), SYNTAX (21%), VALIDATE (13%)
+- Top performers: DeepSeek Chat (27%), Mistral Large (18%), Llama 3 70B (18%)
+- Only 25% of models pass at least one task across all 11 scenarios
+
+This benchmark complements the existing Terraform SRE Benchmark by testing **code generation** rather than **code understanding**, providing a more comprehensive evaluation of LLM capabilities for SRE tasks.
+
 ## 🔗 About the Rootly AI Labs
 SRE-skills-bench is built with ❤️ by the [Rootly AI Labs](https://rootly.com/ai-labs) for engineering teams everywhere. The Rootly AI Labs is a fellow-led community designed to redefine reliability engineering. We develop innovative prototypes, create open-source tools, and produce research that's shared to advance the standards of operational excellence. We want to thank Anthropic, Google Cloud, and Google DeepMind for their support.
