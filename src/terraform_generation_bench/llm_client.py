@@ -45,19 +45,53 @@ class OpenAIClient(LLMClient):
         self.model = model
         self.client = openai.OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
     
+    # Models that require max_completion_tokens instead of max_tokens
+    _COMPLETION_TOKENS_MODELS = {"o1", "o1-mini", "o1-pro", "o3", "o3-mini", "o4-mini"}
+
+    def _uses_completion_tokens(self) -> bool:
+        """Return True if the model requires max_completion_tokens."""
+        name = self.model.lower()
+        for prefix in self._COMPLETION_TOKENS_MODELS:
+            if name == prefix or name.startswith(f"{prefix}-"):
+                return True
+        if name.startswith("gpt-"):
+            try:
+                version = float(name.split("-")[1])
+                if version >= 5:
+                    return True
+            except (IndexError, ValueError):
+                pass
+        return False
+
+    def _is_reasoning_model(self) -> bool:
+        """Return True if the model supports reasoning_effort."""
+        name = self.model.lower()
+        for prefix in self._COMPLETION_TOKENS_MODELS:
+            if name == prefix or name.startswith(f"{prefix}-"):
+                return True
+        return False
+
     def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 2000, **kwargs) -> str:
         """Generate text using OpenAI API."""
         try:
-            response = self.client.chat.completions.create(
+            params = dict(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a Terraform expert. Generate only Terraform code blocks."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=temperature,
-                max_tokens=max_tokens,
-                **kwargs
+                **kwargs,
             )
+            if self._uses_completion_tokens():
+                params["max_completion_tokens"] = max_tokens
+            else:
+                params["max_tokens"] = max_tokens
+
+            if self._is_reasoning_model():
+                params["reasoning_effort"] = "medium"
+
+            response = self.client.chat.completions.create(**params)
             return response.choices[0].message.content
         except Exception as e:
             raise Exception(f"OpenAI API error: {e}")
@@ -130,10 +164,13 @@ class AnthropicClient(LLMClient):
         alternatives.extend(universal_fallbacks)
         return alternatives
     
+    _THINKING_BUDGET_TOKENS = 8192
+
     def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 2000, **kwargs) -> str:
         """Generate text using Anthropic API.
-        
+
         Uses direct HTTP requests since the SDK has issues with model names.
+        Extended thinking is enabled with a budget of 8192 tokens.
         """
         api_key = self.api_key or os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
@@ -141,7 +178,7 @@ class AnthropicClient(LLMClient):
                 "ANTHROPIC_API_KEY environment variable is not set. "
                 "Please set it with: export ANTHROPIC_API_KEY='your-key-here'"
             )
-        
+
         # Use direct HTTP requests (same approach as test_anthropic_direct.py that works)
         url = "https://api.anthropic.com/v1/messages"
         headers = {
@@ -149,37 +186,49 @@ class AnthropicClient(LLMClient):
             "anthropic-version": "2023-06-01",
             "content-type": "application/json"
         }
-        
+
         # Try the model and alternatives if it fails
         models_to_try = self._get_model_alternatives(self.model)
         last_error = None
-        
+
         for model_name in models_to_try:
             try:
+                # Extended thinking requires temperature=1 and
+                # max_tokens > budget_tokens
+                thinking_max = max(max_tokens, self._THINKING_BUDGET_TOKENS + max_tokens)
                 payload = {
                     "model": model_name,
-                    "max_tokens": max_tokens,
-                    "temperature": temperature,
+                    "max_tokens": thinking_max,
+                    "temperature": 1,
+                    "thinking": {
+                        "type": "enabled",
+                        "budget_tokens": self._THINKING_BUDGET_TOKENS,
+                    },
                     "system": "You are a Terraform expert. Generate only Terraform code blocks.",
                     "messages": [
                         {"role": "user", "content": prompt}
                     ]
                 }
-                
+
                 # Add any additional kwargs
                 for key, value in kwargs.items():
                     if key not in payload:
                         payload[key] = value
-                
-                response = requests.post(url, headers=headers, json=payload, timeout=60)
-                
+
+                response = requests.post(url, headers=headers, json=payload, timeout=120)
+
                 if response.status_code == 200:
                     data = response.json()
                     # If we used a different model, log it
                     if model_name != self.model:
                         import sys
                         print(f"[INFO] Used model '{model_name}' instead of '{self.model}'", file=sys.stderr)
-                    return data["content"][0]["text"]
+                    # Extract the text block (skip thinking blocks)
+                    for block in data["content"]:
+                        if block.get("type") == "text":
+                            return block["text"]
+                    # Fallback: return first block's text if no type=text found
+                    return data["content"][0].get("text", "")
                 elif response.status_code == 401:
                     raise Exception(
                         f"Anthropic API authentication error (401). "

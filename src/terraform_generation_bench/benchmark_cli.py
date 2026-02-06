@@ -54,15 +54,17 @@ def main():
                              help="Task IDs to test (default: all tasks in tasks/)")
     suite_parser.add_argument("--runs-per-model", type=int, default=1,
                              help="Number of runs per model (default: 1)")
-    suite_parser.add_argument("--max-workers", type=int, default=None,
-                             help="Maximum parallel workers (default: min(CPU count, 4))")
+    suite_parser.add_argument("--max-workers", type=int, default=10,
+                             help="Maximum parallel workers (default: 10)")
+    suite_parser.add_argument("--no-tui", action="store_true",
+                             help="Disable the Rich TUI (plain log output)")
     
     # Report command
     report_parser = subparsers.add_parser("report", help="Generate reports")
     report_parser.add_argument("--task-id", help="Task identifier (default: all tasks with results)")
     report_parser.add_argument("--models", nargs="+", help="Model names to compare")
-    report_parser.add_argument("--format", choices=["json", "html", "markdown", "table", "comprehensive"],
-                              default="markdown", help="Report format (comprehensive shows overall + per-task)")
+    report_parser.add_argument("--format", choices=["json", "html", "markdown", "table", "comprehensive", "summary"],
+                              default="markdown", help="Report format (comprehensive shows overall + per-task, summary shows per-task matrix)")
     report_parser.add_argument("--output", help="Output file path (for single task) or directory (for all tasks)")
     
     args = parser.parse_args()
@@ -71,8 +73,10 @@ def main():
         parser.print_help()
         sys.exit(1)
     
+    base_dir = Path(__file__).parent.parent.parent
+    results_dir = base_dir / "results"
     runner = BenchmarkRunner()
-    reporter = ReportGenerator()
+    reporter = ReportGenerator(results_dir=results_dir)
     
     if args.command == "list-models":
         from terraform_generation_bench.llm_client import OpenRouterClient
@@ -109,7 +113,7 @@ def main():
         from terraform_generation_bench.llm_client import LLMClientFactory
         
         # Load prompt from tasks directory
-        prompt_file = Path(__file__).parent.parent.parent.parent / "tasks" / "terraform_generation" / args.task_id / "prompt.txt"
+        prompt_file = Path(__file__).parent.parent.parent / "tasks" / "terraform_generation" / args.task_id / "prompt.txt"
         if not prompt_file.exists():
             prompt_file = Path.cwd() / "tasks" / args.task_id / "prompt.txt"
         if not prompt_file.exists():
@@ -129,7 +133,7 @@ def main():
         run_id = args.run_id or f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         # Replace both - and / with _ for valid directory names
         model_name = f"{args.provider}_{args.model.replace('-', '_').replace('/', '_')}"
-        work_dir = Path(__file__).parent.parent.parent.parent / "generated" / model_name / args.task_id / run_id
+        work_dir = Path(__file__).parent.parent.parent / "generated" / model_name / args.task_id / run_id
         work_dir.mkdir(parents=True, exist_ok=True)
         
         generator.save_files(files, work_dir)
@@ -177,7 +181,7 @@ def main():
         
         # Auto-discover tasks if not provided
         if not args.tasks:
-            tasks_dir = Path(__file__).parent.parent.parent.parent / "tasks" / "terraform_generation"
+            tasks_dir = Path(__file__).parent.parent.parent / "tasks" / "terraform_generation"
             if not tasks_dir.exists():
                 print("Error: tasks/ directory not found")
                 sys.exit(1)
@@ -187,15 +191,35 @@ def main():
                 sys.exit(1)
             print(f"Auto-discovered {len(args.tasks)} tasks: {', '.join(args.tasks)}")
         
+        # Set up TUI display if stderr is a TTY and --no-tui not passed
+        display = None
+        if sys.stderr.isatty() and not args.no_tui:
+            from terraform_generation_bench.display import (
+                BenchmarkDisplay,
+                set_log_callback,
+            )
+            total_jobs = len(models) * len(args.tasks) * args.runs_per_model
+            display = BenchmarkDisplay(total_jobs)
+            set_log_callback(display.on_log)
+
         # Run benchmark suite with multiple runs per model
         all_results = []
-        for run_num in range(args.runs_per_model):
-            if args.runs_per_model > 1:
-                print(f"\n{'='*80}")
-                print(f"Run {run_num + 1} of {args.runs_per_model}")
-                print(f"{'='*80}")
-            suite_result = runner.run_benchmark_suite(models, args.tasks, max_workers=args.max_workers)
-            all_results.append(suite_result)
+        try:
+            for run_num in range(args.runs_per_model):
+                if args.runs_per_model > 1:
+                    print(f"\n{'='*80}")
+                    print(f"Run {run_num + 1} of {args.runs_per_model}")
+                    print(f"{'='*80}")
+                suite_result = runner.run_benchmark_suite(
+                    models, args.tasks,
+                    max_workers=args.max_workers,
+                    display=display,
+                )
+                all_results.append(suite_result)
+        finally:
+            if display is not None:
+                from terraform_generation_bench.display import set_log_callback
+                set_log_callback(None)
         
         # Aggregate results if multiple runs
         if args.runs_per_model > 1:
@@ -215,20 +239,59 @@ def main():
         print(f"Total runs: {len(suite_result['results'])}")
         print(f"Total time: {suite_result['total_time']:.2f}s")
         print("="*80)
+
+        # Print model comparison table
+        from collections import defaultdict
+        model_stats = defaultdict(lambda: {"pass": 0, "fail": 0, "total": 0})
+        for r in suite_result["results"]:
+            name = r.get("model_name") or f"{r.get('provider', '?')}_{r.get('model', '?')}"
+            model_stats[name]["total"] += 1
+            if r.get("overall_pass"):
+                model_stats[name]["pass"] += 1
+            else:
+                model_stats[name]["fail"] += 1
+
+        if model_stats:
+            # Sort by pass rate descending
+            ranked = sorted(
+                model_stats.items(),
+                key=lambda kv: kv[1]["pass"] / max(kv[1]["total"], 1),
+                reverse=True,
+            )
+            name_width = max(len(n) for n, _ in ranked)
+            name_width = max(name_width, 5)  # minimum width for "Model"
+            header = f"{'Model':<{name_width}}  {'Pass':>5}  {'Fail':>5}  {'Total':>5}  {'Acc':>7}"
+            print(f"\n{header}")
+            print("-" * len(header))
+            for name, stats in ranked:
+                acc = stats["pass"] / max(stats["total"], 1) * 100
+                print(f"{name:<{name_width}}  {stats['pass']:>5}  {stats['fail']:>5}  {stats['total']:>5}  {acc:>6.1f}%")
+            print()
     
     elif args.command == "report":
-        # Handle comprehensive report (across all tasks)
-        if args.format == "comprehensive":
+        # Handle comprehensive and summary reports (across all tasks)
+        if args.format in ("comprehensive", "summary"):
             comprehensive = reporter.generate_comprehensive_report(
                 models=args.models,
                 task_ids=None  # Auto-discover all tasks
             )
-            
+
+            if args.format == "summary":
+                # Matrix table: models x tasks
+                output_file = None
+                if args.output:
+                    output_file = Path(args.output).with_suffix(".txt")
+                table = reporter.generate_comprehensive_table_report(comprehensive, output_file)
+                print(table)
+                if output_file:
+                    print(f"Saved to: {output_file}")
+                return
+
             if args.output:
                 output_file = Path(args.output)
             else:
-                output_file = Path(__file__).parent.parent.parent.parent / "reports" / f"comprehensive_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            
+                output_file = base_dir / "reports" / f"comprehensive_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
             # Generate in requested format
             if args.output and args.output.endswith('.html'):
                 output_file = Path(args.output)
@@ -236,7 +299,7 @@ def main():
             else:
                 output_file = output_file.with_suffix(".md")
                 reporter.generate_comprehensive_markdown_report(comprehensive, output_file)
-            
+
             print(f"\n✅ Comprehensive report generated: {output_file}")
             print(f"\nOverall Model Rankings:")
             for i, entry in enumerate(comprehensive.get("ranking", [])[:5], 1):
@@ -246,7 +309,7 @@ def main():
         
         # Auto-discover tasks if not provided
         if not args.task_id:
-            results_dir = Path(__file__).parent.parent.parent.parent / "results"
+            results_dir = Path(__file__).parent.parent.parent / "results"
             if not results_dir.exists():
                 print("Error: results/ directory not found. Run benchmarks first.")
                 sys.exit(1)
@@ -279,7 +342,7 @@ def main():
             task_ids = args.task_id
         
         # Generate reports for each task
-        reports_dir = Path(__file__).parent.parent.parent.parent / "reports"
+        reports_dir = Path(__file__).parent.parent.parent / "reports"
         reports_dir.mkdir(exist_ok=True)
         
         for task_id in task_ids:
@@ -289,7 +352,7 @@ def main():
                 comparison = reporter.generate_comparison_report(args.models, task_id)
             else:
                 # Find all models that have results for this task
-                results_dir = Path(__file__).parent.parent.parent.parent / "results"
+                results_dir = Path(__file__).parent.parent.parent / "results"
                 models = []
                 for model_dir in results_dir.iterdir():
                     if model_dir.is_dir():

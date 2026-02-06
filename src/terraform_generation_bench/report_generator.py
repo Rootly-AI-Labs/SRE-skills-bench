@@ -36,22 +36,22 @@ class ReportGenerator:
         with open(result_file, 'r') as f:
             return json.load(f)
     
-    def generate_model_report(self, model_name: str, task_id: str, latest_only: bool = True) -> Dict[str, Any]:
+    def generate_model_report(self, model_name: str, task_id: str, latest_n: int = 1) -> Dict[str, Any]:
         """Generate report for a specific model and task.
-        
+
         Args:
             model_name: Model name
             task_id: Task ID
-            latest_only: If True, only use the latest run (default: True)
-            
+            latest_n: Use only the N most recent runs (default: 1). 0 means all.
+
         Returns:
             Report dictionary
         """
         task_dir = self.results_dir / model_name / task_id
-        
+
         if not task_dir.exists():
             return {"error": "No results found"}
-        
+
         runs = []
         run_dirs = []
         for run_dir in task_dir.iterdir():
@@ -60,16 +60,15 @@ class ReportGenerator:
                 if result:
                     runs.append(result)
                     run_dirs.append((run_dir.name, result))
-        
+
         if not runs:
             return {"error": "No valid runs found"}
-        
-        # If latest_only, use only the most recent run (by run_id timestamp)
-        if latest_only and len(runs) > 1:
-            # Sort by run_id (format: YYYYMMDD_HHMMSS) - latest first
+
+        # Keep only the N most recent runs (by run_id timestamp)
+        if latest_n and len(runs) > latest_n:
             run_dirs.sort(key=lambda x: x[0], reverse=True)
-            latest_run_id, latest_result = run_dirs[0]
-            runs = [latest_result]
+            run_dirs = run_dirs[:latest_n]
+            runs = [result for _, result in run_dirs]
         
         # Calculate statistics
         total_runs = len(runs)
@@ -322,7 +321,7 @@ class ReportGenerator:
         # Auto-discover models if not provided
         if models is None:
             # First, try to load from models.json to get all expected models
-            models_json_path = Path(__file__).parent.parent.parent.parent / "models.json"
+            models_json_path = Path(__file__).parent.parent.parent / "models.json"
             expected_models = set()
             if models_json_path.exists():
                 try:
@@ -382,7 +381,7 @@ class ReportGenerator:
             
             # Collect per-task stats
             for task_id in task_ids:
-                report = self.generate_model_report(model_name, task_id, latest_only=True)
+                report = self.generate_model_report(model_name, task_id, latest_n=10)
                 if "error" not in report:
                     # Get failure reason from the latest run
                     fail_reason = None
@@ -624,10 +623,94 @@ class ReportGenerator:
             for model_name, model_data in sorted_models:
                 fail_reason = model_data.get("fail_reason", "-" if model_data['pass_rate'] > 0 else "N/A")
                 md += f"| {model_name} | {model_data['pass_rate']}% | {model_data['average_time']:.2f} | {model_data['total_runs']} | {model_data['passed_runs']} | {fail_reason} |\n"
-            
+
             md += "\n"
-        
+
         output_file.parent.mkdir(parents=True, exist_ok=True)
         with open(output_file, 'w') as f:
             f.write(md)
+
+    def generate_comprehensive_table_report(self, comprehensive: Dict[str, Any],
+                                            output_file: Path = None,
+                                            max_width: int = 120) -> str:
+        """Generate a matrix-style table with models as rows and tasks as columns.
+
+        Args:
+            comprehensive: Comprehensive report dictionary
+            output_file: Optional output file path. If None, only returns the string.
+            max_width: Maximum line width in characters (default: 82)
+
+        Returns:
+            The table as a string
+        """
+        task_ids = sorted(comprehensive.get("tasks", {}).keys())
+        ranking = comprehensive.get("ranking", [])
+
+        if not task_ids or not ranking:
+            return "No results to display.\n"
+
+        num_tasks = len(task_ids)
+        model_names = [entry["model"] for entry in ranking]
+
+        # Fixed layout: each data column is 5 chars wide ("100%" = 4 + 1 space)
+        col_w = 5       # width per task column (includes leading space)
+        ovr_w = 8       # width for Overall data column
+        ovr_hdr = "Overall"
+
+        # Model column sized to fit the longest model name
+        model_w = max(max((len(m) for m in model_names), default=15), 15)
+
+        # Use numbered task headers (T1, T2, ...) to save space
+        task_headers = [f"T{i}" for i in range(1, num_tasks + 1)]
+
+        # Build header
+        header = f"{'Model':<{model_w}}"
+        for th in task_headers:
+            header += f"{th:>{col_w}}"
+        header += f"{ovr_hdr:>{ovr_w}}"
+        total_w = len(header)
+
+        lines = []
+        lines.append("Terraform Benchmark - Per-Task Pass Rate Matrix")
+        lines.append(f"Generated: {comprehensive['timestamp']}")
+        lines.append(f"Runs per task: up to 10 latest")
+        lines.append("")
+        lines.append("=" * total_w)
+        lines.append(header)
+        lines.append("-" * total_w)
+
+        for entry in ranking:
+            model = entry["model"]
+            stats = comprehensive["models"][model]
+            row = f"{model:<{model_w}}"
+            for task_id in task_ids:
+                task_data = stats.get("tasks", {}).get(task_id)
+                if task_data is not None:
+                    cell = f"{task_data['pass_rate']:.0f}%"
+                else:
+                    cell = "-"
+                row += f"{cell:>{col_w}}"
+            row += f"{stats['overall_pass_rate']:.0f}%".rjust(ovr_w)
+            lines.append(row)
+
+        lines.append("=" * total_w)
+
+        # Legend mapping T1..TN to full task names
+        lines.append("")
+        lines.append("Tasks:")
+        for i, task_id in enumerate(task_ids, 1):
+            short = task_id.replace("task_", "") if task_id.startswith("task_") else task_id
+            lines.append(f"  T{i:<3} {short}")
+
+        lines.append(f"\nModels: {len(ranking)}  |  Tasks: {num_tasks}")
+        lines.append("")
+
+        table = "\n".join(lines)
+
+        if output_file:
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(output_file, 'w') as f:
+                f.write(table)
+
+        return table
 
