@@ -80,16 +80,22 @@ class OpenAIClient(LLMClient):
                     {"role": "system", "content": "You are a Terraform expert. Generate only Terraform code blocks."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=temperature,
                 **kwargs,
             )
+
+            if self._is_reasoning_model():
+                # Reasoning models only support temperature=1 (default), so omit it
+                params["reasoning_effort"] = "medium"
+            elif self._uses_completion_tokens():
+                # Newer models (gpt-5+) also only support temperature=1
+                pass
+            else:
+                params["temperature"] = temperature
+
             if self._uses_completion_tokens():
                 params["max_completion_tokens"] = max_tokens
             else:
                 params["max_tokens"] = max_tokens
-
-            if self._is_reasoning_model():
-                params["reasoning_effort"] = "medium"
 
             response = self.client.chat.completions.create(**params)
             return response.choices[0].message.content

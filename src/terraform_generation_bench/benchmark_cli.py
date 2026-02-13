@@ -6,6 +6,7 @@ import json
 import sys
 from pathlib import Path
 from datetime import datetime
+from dotenv import load_dotenv
 
 # Ensure we can import from current directory
 sys.path.insert(0, str(Path(__file__).parent))
@@ -16,6 +17,9 @@ from terraform_generation_bench.report_generator import ReportGenerator
 
 def main():
     """Main CLI entry point."""
+    # Load environment variables from .env file if present
+    load_dotenv()
+
     parser = argparse.ArgumentParser(
         description="Run LLM Terraform code generation benchmarks"
     )
