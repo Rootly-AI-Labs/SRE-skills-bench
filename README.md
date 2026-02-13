@@ -134,7 +134,7 @@ export OPENROUTER_API_KEY=your_key  # Optional
 # Or use the CLI directly
 python -m terraform_generation_bench.benchmark_cli suite \
   --models models.json \
-  --tasks all \
+  --tasks all \           # note: you may need to remove this line of code during runtime
   --runs-per-model 1
 ```
 
