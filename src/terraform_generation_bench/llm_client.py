@@ -276,6 +276,47 @@ class AnthropicClient(LLMClient):
         )
 
 
+class EdgeeClient(LLMClient):
+    """Edgee API client - OpenAI-compatible with compression."""
+
+    def __init__(self, model: str = "claude-sonnet-4-5", api_key: Optional[str] = None):
+        """Initialize Edgee client.
+
+        Args:
+            model: Model name (e.g., "claude-sonnet-4-5", "gpt-4o")
+            api_key: Edgee API key (defaults to EDGEE_API_KEY env var)
+        """
+        self.model = model
+        self.client = openai.OpenAI(
+            base_url="https://api.edgee.ai/v1",
+            api_key=api_key or os.getenv("EDGEE_API_KEY"),
+            default_headers={
+                "x-edgee-enable-compression": "true",
+                "x-edgee-compression-rate": "0.8",
+                "x-edgee-tags": "sre-skills-bench,evaluation",
+            }
+        )
+
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 2000, **kwargs) -> str:
+        """Generate text using Edgee API (OpenAI-compatible)."""
+        try:
+            params = dict(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a Terraform expert. Generate only Terraform code blocks."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=temperature,
+                max_tokens=max_tokens,
+                **kwargs,
+            )
+
+            response = self.client.chat.completions.create(**params)
+            return response.choices[0].message.content
+        except Exception as e:
+            raise Exception(f"Edgee API error: {e}")
+
+
 class OpenRouterClient(LLMClient):
     """OpenRouter API client - provides access to multiple LLM providers."""
     
@@ -427,10 +468,10 @@ class LLMClientFactory:
     @staticmethod
     def _has_direct_api_key(provider: str) -> bool:
         """Check if direct provider API key is available.
-        
+
         Args:
-            provider: Provider name ("openai", "anthropic")
-            
+            provider: Provider name ("openai", "anthropic", "edgee")
+
         Returns:
             True if API key is available
         """
@@ -438,6 +479,8 @@ class LLMClientFactory:
             return bool(os.getenv("OPENAI_API_KEY"))
         elif provider == "anthropic":
             return bool(os.getenv("ANTHROPIC_API_KEY"))
+        elif provider == "edgee":
+            return bool(os.getenv("EDGEE_API_KEY"))
         return False
     
     @staticmethod
@@ -468,28 +511,32 @@ class LLMClientFactory:
         return None
     
     @staticmethod
-    def create_client(provider: str, model: str, api_key: Optional[str] = None, 
+    def create_client(provider: str, model: str, api_key: Optional[str] = None,
                      use_openrouter_fallback: bool = True) -> LLMClient:
         """Create an LLM client for the specified provider.
-        
+
         Smart routing:
-        - Uses direct provider API key if available (OPENAI_API_KEY, ANTHROPIC_API_KEY)
+        - Uses direct provider API key if available (OPENAI_API_KEY, ANTHROPIC_API_KEY, EDGEE_API_KEY)
         - Falls back to OpenRouter if direct key not available and use_openrouter_fallback=True
-        
+
         Args:
-            provider: Provider name ("openai", "anthropic", "openrouter")
+            provider: Provider name ("openai", "anthropic", "edgee", "openrouter")
             model: Model name
             api_key: Optional API key (overrides environment check)
             use_openrouter_fallback: If True, fallback to OpenRouter when direct key unavailable
-            
+
         Returns:
             LLMClient instance
         """
         provider = provider.lower()
-        
+
         # If provider is explicitly "openrouter", always use OpenRouter
         if provider == "openrouter":
             return OpenRouterClient(model=model, api_key=api_key)
+
+        # If provider is explicitly "edgee", always use Edgee
+        if provider == "edgee":
+            return EdgeeClient(model=model, api_key=api_key)
         
         # Check if we have a direct API key (or one was provided)
         has_direct_key = bool(api_key) or LLMClientFactory._has_direct_api_key(provider)
@@ -501,6 +548,8 @@ class LLMClientFactory:
                 return OpenAIClient(model=model, api_key=api_key)
             elif provider == "anthropic":
                 return AnthropicClient(model=model, api_key=api_key)
+            elif provider == "edgee":
+                return EdgeeClient(model=model, api_key=api_key)
         elif use_openrouter_fallback and has_openrouter_key:
             # Fallback to OpenRouter only if:
             # 1. No direct key available
@@ -518,6 +567,8 @@ class LLMClientFactory:
                     return OpenAIClient(model=model, api_key=api_key)
                 elif provider == "anthropic":
                     return AnthropicClient(model=model, api_key=api_key)
+                elif provider == "edgee":
+                    return EdgeeClient(model=model, api_key=api_key)
         elif use_openrouter_fallback and not has_openrouter_key:
             # Direct key not available, but OpenRouter key also not set
             # Use direct provider - it will fail with a clear error about missing API key
@@ -525,12 +576,16 @@ class LLMClientFactory:
                 return OpenAIClient(model=model, api_key=api_key)
             elif provider == "anthropic":
                 return AnthropicClient(model=model, api_key=api_key)
+            elif provider == "edgee":
+                return EdgeeClient(model=model, api_key=api_key)
         
         # No fallback available, use direct provider (will fail with clear error)
         if provider == "openai":
             return OpenAIClient(model=model, api_key=api_key)
         elif provider == "anthropic":
             return AnthropicClient(model=model, api_key=api_key)
+        elif provider == "edgee":
+            return EdgeeClient(model=model, api_key=api_key)
         else:
-            raise ValueError(f"Unknown provider: {provider}. Supported: openai, anthropic, openrouter")
+            raise ValueError(f"Unknown provider: {provider}. Supported: openai, anthropic, edgee, openrouter")
 
