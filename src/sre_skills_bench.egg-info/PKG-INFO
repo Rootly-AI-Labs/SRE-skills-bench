@@ -1,3 +1,21 @@
+Metadata-Version: 2.4
+Name: sre-skills-bench
+Version: 0.1.0
+Summary: Benchmark suite for evaluating LLMs on Site Reliability Engineering tasks
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: adjusttext>=1.3.0
+Requires-Dist: matplotlib>=3.10.7
+Provides-Extra: terraform-generation
+Requires-Dist: pyyaml>=6.0; extra == "terraform-generation"
+Requires-Dist: boto3>=1.28.0; extra == "terraform-generation"
+Requires-Dist: requests>=2.31.0; extra == "terraform-generation"
+Requires-Dist: openai>=1.0.0; extra == "terraform-generation"
+Requires-Dist: anthropic>=0.18.0; extra == "terraform-generation"
+Requires-Dist: rich>=13.0.0; extra == "terraform-generation"
+Dynamic: license-file
+
 # SRE-skills-bench
 
 <h2 align="center">
@@ -134,7 +152,7 @@ export OPENROUTER_API_KEY=your_key  # Optional
 # Or use the CLI directly
 python -m terraform_generation_bench.benchmark_cli suite \
   --models models.json \
-  --tasks all \           # note: you may need to remove this line of code during runtime
+  --tasks all \
   --runs-per-model 1
 ```
 

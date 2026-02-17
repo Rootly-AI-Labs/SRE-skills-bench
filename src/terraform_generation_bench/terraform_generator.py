@@ -43,14 +43,23 @@ class TerraformGenerator:
         log_info(f"Extracting code blocks from LLM response (length: {len(text)} chars)")
         
         # Method 1: Standard markdown code blocks with filename
-        # Pattern: ```main.tf\ncode\n``` or ```terraform\ncode\n```
+        # Pattern: ```main.tf\ncode\n``` or ```terraform\ncode\n``` or ```hcl\ncode\n```
         pattern1 = r'```(?:(\w+\.tf)|terraform|hcl)?\s*\n(.*?)```'
         matches = re.finditer(pattern1, text, re.DOTALL | re.IGNORECASE)
-        
+
         for match in matches:
             filename = match.group(1)
             code = match.group(2).strip()
-            
+
+            # If no filename in the ``` marker, check if the first line is a
+            # comment like "# main.tf" — common pattern from Claude/Anthropic
+            if not filename and code:
+                first_line_match = re.match(r'^#\s*(\w+\.tf)\s*$', code.split('\n')[0])
+                if first_line_match:
+                    filename = first_line_match.group(1)
+                    # Remove the comment line from the code
+                    code = '\n'.join(code.split('\n')[1:]).strip()
+
             if filename:
                 if not filename.endswith('.tf'):
                     filename = f"{filename}.tf"
@@ -184,7 +193,8 @@ class TerraformGenerator:
         response = self.llm_client.generate(
             prompt=prompt,
             temperature=0.0,  # Deterministic output
-            max_tokens=1000  # Reduced to avoid OpenRouter credit limits
+            max_tokens=16000,
+            reasoning_tokens=10000,
         )
         
         log_info(f"Received LLM response ({len(response)} characters)")

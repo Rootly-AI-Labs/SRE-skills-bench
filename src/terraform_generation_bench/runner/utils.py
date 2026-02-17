@@ -18,34 +18,111 @@ class Colors:
 
 def log_info(message: str) -> None:
     """Log an info message."""
-    print(f"{Colors.GREEN}[INFO]{Colors.NC} {message}", file=sys.stderr)
+    from terraform_generation_bench.display import get_log_callback
+    cb = get_log_callback()
+    if cb is not None:
+        cb(f"[INFO] {message}")
+    else:
+        print(f"{Colors.GREEN}[INFO]{Colors.NC} {message}", file=sys.stderr)
 
 
 def log_error(message: str) -> None:
     """Log an error message."""
-    print(f"{Colors.RED}[ERROR]{Colors.NC} {message}", file=sys.stderr)
+    from terraform_generation_bench.display import get_log_callback
+    cb = get_log_callback()
+    if cb is not None:
+        cb(f"[ERROR] {message}")
+    else:
+        print(f"{Colors.RED}[ERROR]{Colors.NC} {message}", file=sys.stderr)
 
 
 def log_warn(message: str) -> None:
     """Log a warning message."""
-    print(f"{Colors.YELLOW}[WARN]{Colors.NC} {message}", file=sys.stderr)
+    from terraform_generation_bench.display import get_log_callback
+    cb = get_log_callback()
+    if cb is not None:
+        cb(f"[WARN] {message}")
+    else:
+        print(f"{Colors.YELLOW}[WARN]{Colors.NC} {message}", file=sys.stderr)
+
+
+def _plugin_cache_dir() -> Path:
+    """Return (and create) the shared Terraform plugin cache directory."""
+    cache_dir = Path.home() / ".terraform.d" / "plugin-cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    return cache_dir
+
+
+_env_exported = False
 
 
 def export_localstack_env() -> Dict[str, str]:
-    """Export LocalStack AWS environment variables.
-    
+    """Export LocalStack AWS environment variables and Terraform plugin cache.
+
+    Safe to call repeatedly — the actual work only happens once.
+
     Returns:
         Dictionary of environment variables to set.
     """
+    global _env_exported
     env = {
         'AWS_ACCESS_KEY_ID': 'test',
         'AWS_SECRET_ACCESS_KEY': 'test',
         'AWS_DEFAULT_REGION': 'us-east-1',
         'AWS_REGION': 'us-east-1',
+        'TF_PLUGIN_CACHE_DIR': str(_plugin_cache_dir()),
+        'TF_PLUGIN_CACHE_MAY_BREAK_DEPENDENCY_LOCK_FILE': '1',
     }
     os.environ.update(env)
-    log_info("Exported LocalStack AWS environment variables")
+    if not _env_exported:
+        _env_exported = True
+        log_info("Exported LocalStack AWS environment variables")
     return env
+
+
+def warm_provider_cache() -> None:
+    """Download the AWS provider into the shared plugin cache.
+
+    Must be called *before* parallel workers start so that every
+    ``terraform init`` is a cache hit (read-only) with no concurrent writes.
+    """
+    import shutil
+    import tempfile
+
+    cache_dir = _plugin_cache_dir()
+    log_info(f"Warming Terraform provider cache in {cache_dir} ...")
+
+    tmp = Path(tempfile.mkdtemp(prefix="tf-cache-warm-"))
+    try:
+        # Minimal config that requires the AWS provider
+        (tmp / "main.tf").write_text(
+            'terraform {\n'
+            '  required_providers {\n'
+            '    aws = { source = "hashicorp/aws" }\n'
+            '  }\n'
+            '}\n'
+        )
+
+        env = os.environ.copy()
+        env["TF_PLUGIN_CACHE_DIR"] = str(cache_dir)
+        env["TF_PLUGIN_CACHE_MAY_BREAK_DEPENDENCY_LOCK_FILE"] = "1"
+
+        result = subprocess.run(
+            ["terraform", "init"],
+            cwd=str(tmp),
+            capture_output=True,
+            text=True,
+            timeout=300,  # 5 min for a cold download
+            env=env,
+        )
+        if result.returncode == 0:
+            log_info("Provider cache warm — hashicorp/aws is ready")
+        else:
+            log_warn(f"Cache warm-up failed (exit {result.returncode}): {result.stderr[:200]}")
+    except subprocess.TimeoutExpired:
+        log_warn("Cache warm-up timed out after 300 s — workers will download individually")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 def check_localstack() -> bool:

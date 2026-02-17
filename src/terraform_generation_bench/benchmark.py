@@ -11,6 +11,7 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent))
 
 from terraform_generation_bench.runner import TaskRunner, log_info, log_error
+from terraform_generation_bench.runner.utils import warm_provider_cache
 from terraform_generation_bench.terraform_generator import TerraformGenerator
 from terraform_generation_bench.llm_client import LLMClientFactory
 
@@ -31,6 +32,7 @@ class BenchmarkRunner:
         self.generated_dir = generated_dir or (base_dir / "generated")
         self.results_dir = results_dir or (base_dir / "results")
         self.results_dir.mkdir(parents=True, exist_ok=True)
+        self._display = None  # Set by run_benchmark_suite when TUI is active
     
     def run_single_benchmark(self, provider: str, model: str, task_id: str, 
                             run_id: Optional[str] = None) -> Dict[str, Any]:
@@ -65,12 +67,12 @@ class BenchmarkRunner:
         
         try:
             # Step 1: Load prompt from tasks directory
-            prompt_file = Path("tasks") / task_id / "prompt.txt"
+            prompt_file = Path("tasks") / "terraform_generation" / task_id / "prompt.txt"
             if not prompt_file.exists():
                 # Try absolute path from current working directory
-                prompt_file = Path.cwd() / "tasks" / task_id / "prompt.txt"
+                prompt_file = Path.cwd() / "tasks" / "terraform_generation" / task_id / "prompt.txt"
             if not prompt_file.exists():
-                raise FileNotFoundError(f"Prompt file not found: tasks/{task_id}/prompt.txt")
+                raise FileNotFoundError(f"Prompt file not found: tasks/terraform_generation/{task_id}/prompt.txt")
             
             log_info(f"Loading prompt from: {prompt_file}")
             with open(prompt_file, 'r') as f:
@@ -79,14 +81,24 @@ class BenchmarkRunner:
             # Step 2: Generate Terraform code using the prompt text
             log_info(f"Step 1: Generating Terraform code with {model_name} using prompt.txt...")
             step_start = time.time()
-            
+
+            if self._display is not None:
+                self._display.on_api_start(model_name, task_id)
+
             llm_client = LLMClientFactory.create_client(provider, model)
             generator = TerraformGenerator(llm_client)
-            files = generator.generate(prompt, task_id, save_raw_response=True)
-            
+            api_success = False
+            try:
+                files = generator.generate(prompt, task_id, save_raw_response=True)
+                api_success = True
+            finally:
+                api_duration = time.time() - step_start
+                if self._display is not None:
+                    self._display.on_api_complete(model_name, task_id, api_success, api_duration)
+
             result["steps"]["generation"] = {
                 "success": True,
-                "time": time.time() - step_start,
+                "time": api_duration,
                 "files_generated": list(files.keys()),
                 "prompt_file": str(prompt_file)
             }
@@ -148,22 +160,24 @@ class BenchmarkRunner:
         
         return result
     
-    def run_benchmark_suite(self, models: List[Dict[str, str]], 
+    def run_benchmark_suite(self, models: List[Dict[str, str]],
                            task_ids: List[str],
-                           max_workers: Optional[int] = None) -> Dict[str, Any]:
+                           max_workers: Optional[int] = None,
+                           display=None) -> Dict[str, Any]:
         """Run benchmark suite across multiple models and tasks.
-        
+
         Args:
             models: List of model configs [{"provider": "openai", "model": "gpt-4"}, ...]
             task_ids: List of task IDs to test
-            max_workers: Maximum number of parallel workers (default: CPU count)
-            
+            max_workers: Maximum number of parallel workers (default: min(CPU count, 20))
+            display: Optional BenchmarkDisplay instance for TUI output.
+
         Returns:
             Suite results dictionary
         """
         from concurrent.futures import ThreadPoolExecutor, as_completed
         import multiprocessing
-        
+
         suite_start = time.time()
         suite_results = {
             "timestamp": datetime.now().isoformat(),
@@ -171,11 +185,11 @@ class BenchmarkRunner:
             "tasks": task_ids,
             "results": []
         }
-        
+
         # Determine number of workers
         if max_workers is None:
-            max_workers = min(multiprocessing.cpu_count(), 4)  # Cap at 4 to avoid API rate limits
-        
+            max_workers = min(multiprocessing.cpu_count(), 20)
+
         # Create list of all benchmark jobs
         jobs = []
         for model_config in models:
@@ -183,43 +197,63 @@ class BenchmarkRunner:
             model = model_config["model"]
             for task_id in task_ids:
                 jobs.append((provider, model, task_id))
-        
+
         log_info(f"Running {len(jobs)} benchmarks with {max_workers} parallel workers...")
-        
-        # Run benchmarks in parallel
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Submit all jobs
-            future_to_job = {
-                executor.submit(self.run_single_benchmark, provider, model, task_id): (provider, model, task_id)
-                for provider, model, task_id in jobs
-            }
-            
-            # Collect results as they complete
-            completed = 0
-            for future in as_completed(future_to_job):
-                provider, model, task_id = future_to_job[future]
-                completed += 1
-                try:
-                    result = future.result()
-                    suite_results["results"].append(result)
-                    status = "PASS" if result.get("overall_pass", False) else "FAIL"
-                    log_info(f"[{completed}/{len(jobs)}] {provider}/{model} on {task_id}: {status}")
-                except Exception as e:
-                    log_error(f"Failed to run benchmark for {provider}/{model} on {task_id}: {e}")
-                    suite_results["results"].append({
-                        "provider": provider,
-                        "model": model,
-                        "task_id": task_id,
-                        "overall_pass": False,
-                        "error": str(e)
-                    })
-        
+
+        # Download providers once so parallel workers only read from cache
+        warm_provider_cache()
+
+        # Store display so run_single_benchmark can report API call events
+        self._display = display
+
+        if display is not None:
+            display.start()
+
+        try:
+            # Run benchmarks in parallel
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                # Submit all jobs
+                future_to_job = {
+                    executor.submit(self.run_single_benchmark, provider, model, task_id): (provider, model, task_id)
+                    for provider, model, task_id in jobs
+                }
+
+                # Collect results as they complete
+                completed = 0
+                for future in as_completed(future_to_job):
+                    provider, model, task_id = future_to_job[future]
+                    completed += 1
+                    model_name = f"{provider}_{model.replace('-', '_').replace('/', '_')}"
+                    try:
+                        result = future.result()
+                        suite_results["results"].append(result)
+                        passed = result.get("overall_pass", False)
+                        status = "PASS" if passed else "FAIL"
+                        log_info(f"[{completed}/{len(jobs)}] {provider}/{model} on {task_id}: {status}")
+                        if display is not None:
+                            display.on_job_complete(model_name, task_id, passed)
+                    except Exception as e:
+                        log_error(f"Failed to run benchmark for {provider}/{model} on {task_id}: {e}")
+                        suite_results["results"].append({
+                            "provider": provider,
+                            "model": model,
+                            "task_id": task_id,
+                            "overall_pass": False,
+                            "error": str(e)
+                        })
+                        if display is not None:
+                            display.on_job_complete(model_name, task_id, False)
+        finally:
+            self._display = None
+            if display is not None:
+                display.stop()
+
         suite_results["total_time"] = time.time() - suite_start
-        
+
         # Save suite results
         suite_file = self.results_dir / f"benchmark_suite_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         with open(suite_file, 'w') as f:
             json.dump(suite_results, f, indent=2)
-        
+
         return suite_results
 

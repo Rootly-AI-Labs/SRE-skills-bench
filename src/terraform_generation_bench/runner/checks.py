@@ -7,7 +7,7 @@ from typing import Dict, Any, List, Optional
 import boto3
 from botocore.exceptions import ClientError
 
-from .utils import log_info, log_error, export_localstack_env, load_spec
+from .utils import log_info, log_error, log_warn, export_localstack_env, load_spec
 
 
 def run_checks(work_dir: Path, task_id: str) -> Dict[str, Any]:
@@ -26,7 +26,7 @@ def run_checks(work_dir: Path, task_id: str) -> Dict[str, Any]:
     export_localstack_env()
     
     # Load task spec to understand what to check
-    spec_file = Path(f"tasks/{task_id}/spec.yaml")
+    spec_file = Path(f"tasks/terraform_generation/{task_id}/spec.yaml")
     if not spec_file.exists():
         log_error(f"Spec file not found: {spec_file}")
         return {

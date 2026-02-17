@@ -50,7 +50,7 @@ class TaskRunner:
         self.logs_dir.mkdir(parents=True, exist_ok=True)
         
         # Load task spec
-        spec_file = Path(f"tasks/{task_id}/spec.yaml")
+        spec_file = Path(f"tasks/terraform_generation/{task_id}/spec.yaml")
         if not spec_file.exists():
             raise FileNotFoundError(f"Spec file not found: {spec_file}")
         self.spec = load_spec(spec_file)
@@ -58,23 +58,38 @@ class TaskRunner:
         # Build terraform variable arguments from spec
         self.tf_vars = self._build_tf_vars()
     
+    # Var names whose values are AWS resource names — must be unique per run
+    # to avoid collisions when the same task runs concurrently for different models.
+    _NAME_VARS = frozenset({"role_name", "policy_name", "bucket_name"})
+
     def _build_tf_vars(self) -> List[str]:
         """Build terraform -var arguments from spec.
-        
+
+        String vars listed in ``_NAME_VARS`` get a short unique suffix
+        (derived from model_name + run_id) so that concurrent runs of the
+        same task against different models don't collide in LocalStack.
+
         Returns:
             List of -var arguments for terraform commands.
         """
+        import hashlib
+        import json
+
+        suffix = hashlib.sha1(
+            f"{self.model_name}-{self.run_id}".encode()
+        ).hexdigest()[:8]
+
         vars_list = []
         vars_dict = self.spec.get('vars', {})
-        
+
         for key, value in vars_dict.items():
             if isinstance(value, list):
-                # Format list as JSON string
-                import json
                 vars_list.extend(["-var", f"{key}={json.dumps(value)}"])
+            elif key in self._NAME_VARS and isinstance(value, str):
+                vars_list.extend(["-var", f"{key}={value}-{suffix}"])
             else:
                 vars_list.extend(["-var", f"{key}={value}"])
-        
+
         return vars_list
     
     def _log_command(self, cmd: List[str], output: str, log_file: Path) -> None:
@@ -103,7 +118,9 @@ class TaskRunner:
             if step_name in ("apply", "apply_2", "destroy"):
                 timeout = 300  # 5 minutes for apply/destroy operations
             elif step_name in ("plan", "plan_2"):
-                timeout = 120  # 2 minutes for plan operations (can be slow with complex configs)
+                timeout = 300  # 5 minutes for plan operations (can be slow with complex configs)
+            elif step_name == "init":
+                timeout = 180  # 3 minutes for init (provider download + cache lock contention)
             else:
                 timeout = 60  # 1 minute for other operations
         
