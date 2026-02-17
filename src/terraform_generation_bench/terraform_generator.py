@@ -193,7 +193,8 @@ class TerraformGenerator:
         response = self.llm_client.generate(
             prompt=prompt,
             temperature=0.0,  # Deterministic output
-            max_tokens=4096
+            max_tokens=16000,
+            reasoning_tokens=10000,
         )
         
         log_info(f"Received LLM response ({len(response)} characters)")

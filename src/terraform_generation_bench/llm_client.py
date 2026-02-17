@@ -2,6 +2,7 @@
 
 import os
 import json
+import time
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
 import openai
@@ -71,7 +72,7 @@ class OpenAIClient(LLMClient):
                 return True
         return False
 
-    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 2000, **kwargs) -> str:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 2000, reasoning_tokens: int = 10000, **kwargs) -> str:
         """Generate text using OpenAI API."""
         try:
             params = dict(
@@ -85,16 +86,13 @@ class OpenAIClient(LLMClient):
 
             if self._is_reasoning_model():
                 # Reasoning models only support temperature=1 (default), so omit it
-                params["reasoning_effort"] = "medium"
+                # Budget reasoning_tokens for thinking + max_tokens for output
+                params["max_completion_tokens"] = reasoning_tokens + max_tokens
             elif self._uses_completion_tokens():
                 # Newer models (gpt-5+) also only support temperature=1
-                pass
-            else:
-                params["temperature"] = temperature
-
-            if self._uses_completion_tokens():
                 params["max_completion_tokens"] = max_tokens
             else:
+                params["temperature"] = temperature
                 params["max_tokens"] = max_tokens
 
             response = self.client.chat.completions.create(**params)
@@ -170,13 +168,11 @@ class AnthropicClient(LLMClient):
         alternatives.extend(universal_fallbacks)
         return alternatives
     
-    _THINKING_BUDGET_TOKENS = 8192
-
-    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 2000, **kwargs) -> str:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 2000, reasoning_tokens: int = 10000, **kwargs) -> str:
         """Generate text using Anthropic API.
 
         Uses direct HTTP requests since the SDK has issues with model names.
-        Extended thinking is enabled with a budget of 8192 tokens.
+        Extended thinking is enabled with the given reasoning_tokens budget.
         """
         api_key = self.api_key or os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
@@ -201,14 +197,13 @@ class AnthropicClient(LLMClient):
             try:
                 # Extended thinking requires temperature=1 and
                 # max_tokens > budget_tokens
-                thinking_max = max(max_tokens, self._THINKING_BUDGET_TOKENS + max_tokens)
                 payload = {
                     "model": model_name,
-                    "max_tokens": thinking_max,
+                    "max_tokens": reasoning_tokens + max_tokens,
                     "temperature": 1,
                     "thinking": {
                         "type": "enabled",
-                        "budget_tokens": self._THINKING_BUDGET_TOKENS,
+                        "budget_tokens": reasoning_tokens,
                     },
                     "system": "You are a Terraform expert. Generate only Terraform code blocks.",
                     "messages": [
@@ -221,33 +216,52 @@ class AnthropicClient(LLMClient):
                     if key not in payload:
                         payload[key] = value
 
-                response = requests.post(url, headers=headers, json=payload, timeout=120)
+                # Retry logic for 429 errors
+                max_retries = 3
+                for retry in range(max_retries):
+                    response = requests.post(url, headers=headers, json=payload, timeout=120)
 
-                if response.status_code == 200:
-                    data = response.json()
-                    # If we used a different model, log it
-                    if model_name != self.model:
-                        import sys
-                        print(f"[INFO] Used model '{model_name}' instead of '{self.model}'", file=sys.stderr)
-                    # Extract the text block (skip thinking blocks)
-                    for block in data["content"]:
-                        if block.get("type") == "text":
-                            return block["text"]
-                    # Fallback: return first block's text if no type=text found
-                    return data["content"][0].get("text", "")
-                elif response.status_code == 401:
-                    raise Exception(
-                        f"Anthropic API authentication error (401). "
-                        f"Please check your ANTHROPIC_API_KEY environment variable."
-                    )
-                elif response.status_code == 404:
-                    # Try next model
-                    last_error = f"404: {response.text[:200]}"
-                    continue
-                else:
-                    # For other errors, try next model but log it
-                    last_error = f"{response.status_code}: {response.text[:200]}"
-                    continue
+                    if response.status_code == 200:
+                        data = response.json()
+                        # If we used a different model, log it
+                        if model_name != self.model:
+                            import sys
+                            print(f"[INFO] Used model '{model_name}' instead of '{self.model}'", file=sys.stderr)
+                        # Extract the text block (skip thinking blocks)
+                        for block in data["content"]:
+                            if block.get("type") == "text":
+                                return block["text"]
+                        # Fallback: return first block's text if no type=text found
+                        return data["content"][0].get("text", "")
+                    elif response.status_code == 429:
+                        # Rate limited - check Retry-After header
+                        retry_after = response.headers.get("Retry-After")
+                        if retry_after:
+                            wait_time = int(retry_after)
+                        else:
+                            wait_time = 2 ** retry  # Exponential backoff: 1s, 2s, 4s
+
+                        if retry < max_retries - 1:
+                            import sys
+                            print(f"[INFO] Rate limited (429), retrying in {wait_time}s (attempt {retry + 1}/{max_retries})", file=sys.stderr)
+                            time.sleep(wait_time)
+                            continue
+                        else:
+                            last_error = f"429: Rate limited after {max_retries} retries"
+                            break
+                    elif response.status_code == 401:
+                        raise Exception(
+                            f"Anthropic API authentication error (401). "
+                            f"Please check your ANTHROPIC_API_KEY environment variable."
+                        )
+                    elif response.status_code == 404:
+                        # Try next model
+                        last_error = f"404: {response.text[:200]}"
+                        break
+                    else:
+                        # For other errors, try next model but log it
+                        last_error = f"{response.status_code}: {response.text[:200]}"
+                        break
                     
             except requests.exceptions.RequestException as e:
                 last_error = f"Request error: {e}"
@@ -297,7 +311,7 @@ class EdgeeClient(LLMClient):
             }
         )
 
-    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 2000, **kwargs) -> str:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 2000, reasoning_tokens: int = 10000, **kwargs) -> str:
         """Generate text using Edgee API (OpenAI-compatible)."""
         try:
             params = dict(
@@ -363,9 +377,9 @@ class OpenRouterClient(LLMClient):
                 "Please set it with: export OPENROUTER_API_KEY='your-key-here'"
             )
     
-    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 2000, **kwargs) -> str:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 2000, reasoning_tokens: int = 10000, **kwargs) -> str:
         """Generate text using OpenRouter API.
-        
+
         OpenRouter uses OpenAI-compatible API format.
         """
         url = "https://openrouter.ai/api/v1/chat/completions"
@@ -387,24 +401,59 @@ class OpenRouterClient(LLMClient):
             **kwargs
         }
         
-        try:
-            response = requests.post(url, headers=headers, json=payload, timeout=120)
-            response.raise_for_status()
-            
-            data = response.json()
-            if "choices" in data and len(data["choices"]) > 0:
-                return data["choices"][0]["message"]["content"]
-            else:
-                raise Exception(f"Unexpected response format: {data}")
-                
-        except requests.exceptions.HTTPError as e:
+        # Retry logic for 429 errors
+        max_retries = 3
+        last_error = None
+
+        for retry in range(max_retries):
+            try:
+                response = requests.post(url, headers=headers, json=payload, timeout=120)
+
+                # Check for 429 before raise_for_status
+                if response.status_code == 429:
+                    retry_after = response.headers.get("Retry-After")
+                    if retry_after:
+                        wait_time = int(retry_after)
+                    else:
+                        wait_time = 2 ** retry  # Exponential backoff: 1s, 2s, 4s
+
+                    if retry < max_retries - 1:
+                        import sys
+                        print(f"[INFO] Rate limited (429), retrying in {wait_time}s (attempt {retry + 1}/{max_retries})", file=sys.stderr)
+                        time.sleep(wait_time)
+                        continue
+                    else:
+                        raise requests.exceptions.HTTPError(f"Rate limited (429) after {max_retries} retries", response=response)
+
+                response.raise_for_status()
+
+                data = response.json()
+                if "choices" in data and len(data["choices"]) > 0:
+                    return data["choices"][0]["message"]["content"]
+                else:
+                    raise Exception(f"Unexpected response format: {data}")
+
+            except requests.exceptions.HTTPError as e:
+                # Non-retryable HTTP error - save and break retry loop
+                last_error = e
+                break
+            except requests.exceptions.RequestException as e:
+                last_error = e
+                break
+            except Exception as e:
+                last_error = e
+                break
+
+        # If we got here, all retries failed - handle the last error
+        if isinstance(last_error, requests.exceptions.HTTPError):
+            e = last_error
             error_msg = f"OpenRouter API HTTP error: {e}"
             if e.response is not None:
                 try:
                     error_data = e.response.json()
                     if "error" in error_data:
                         error_msg += f" - {error_data['error']}"
-                    
+
                     # Handle payment/credit errors (402)
                     if e.response.status_code == 402:
                         error_msg += "\n\n💳 OpenRouter Credit/Payment Issue:"
@@ -418,10 +467,10 @@ class OpenRouterClient(LLMClient):
                         error_msg += "\n     5. Reduce max_tokens in terraform_generator.py"
                         if "metadata" in error_data and "provider_name" in error_data.get("metadata", {}):
                             error_msg += f"\n   - Provider: {error_data['metadata']['provider_name']}"
-                    
+
                     # If model not found, suggest fetching available models
-                    elif (e.response.status_code in [400, 404] and 
-                        ("not a valid model" in str(error_data).lower() or 
+                    elif (e.response.status_code in [400, 404] and
+                        ("not a valid model" in str(error_data).lower() or
                          "no endpoints found" in str(error_data).lower())):
                         available_models = self.get_available_models(self.api_key)
                         if available_models:
@@ -438,10 +487,12 @@ class OpenRouterClient(LLMClient):
                 except:
                     error_msg += f" - {e.response.text[:200]}"
             raise Exception(error_msg)
-        except requests.exceptions.RequestException as e:
-            raise Exception(f"OpenRouter API request error: {e}")
-        except Exception as e:
-            raise Exception(f"OpenRouter API error: {e}")
+        elif isinstance(last_error, requests.exceptions.RequestException):
+            raise Exception(f"OpenRouter API request error: {last_error}")
+        elif last_error:
+            raise Exception(f"OpenRouter API error: {last_error}")
+        else:
+            raise Exception("OpenRouter API error: Unknown error occurred")
 
 
 class LLMClientFactory:
