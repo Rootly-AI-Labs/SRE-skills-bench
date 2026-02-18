@@ -13,15 +13,15 @@ else
 fi
 
 # Configuration
-MODEL="openrouter/openai/gpt-oss-120b"
+MODEL="anthropic/claude-opus-4-6"
 LOG_DIR="logs"
 CSV_FILE="$LOG_DIR/results_$(date +%Y%m%d_%H%M%S).csv"
 
 # Terraform subtasks (run via rootly_terraform -T subtask=X)
-TERRAFORM_SUBTASKS="aws-s3 azure-network azure-compute azure-kubernetes gcp-network gcp-compute gcp-storage aws-vpc aws-iam"
+TERRAFORM_SUBTASKS="s3-security-mcq azure-network-mcq azure-compute-mcq azure-k8s-mcq gcp-network-mcq gcp-compute-mcq gcp-storage-mcq vpc-nat-mcq iam-mcq"
 
 # Standalone benchmarks
-STANDALONE_BENCHMARKS="pull-request-understanding"
+STANDALONE_BENCHMARKS="rootly_gmcq"
 
 # Temporary file to store results
 TEMP_RESULTS="/tmp/eval_results_$$.txt"
@@ -58,11 +58,13 @@ run_terraform_eval() {
     echo "Running evaluation for: rootly_terraform (subtask: $subtask)"
     echo ""
 
-    # Run the evaluation with --log-format json (shows progress bars in real-time)
-    uv run openbench eval rootly_terraform \
+    # Run the evaluation using cleaned datasets (duplicate-choice questions removed)
+    uv run openbench eval "$SCRIPT_DIR/../evals/rootly_terraform_clean" \
         --model "$MODEL" \
         --reasoning-effort "high" \
-        --max-connections 5 \
+        --max-connections 3 \
+        --max-subprocesses 3 \
+        --timeout 180 \
         --log-format json \
         -T subtask="$subtask"
 
@@ -82,6 +84,7 @@ run_standalone_eval() {
         --model "$MODEL" \
         --reasoning-effort "high" \
         --max-connections 5 \
+        --timeout 180 \
         --log-format json
 
     extract_and_save_accuracy "$benchmark"
