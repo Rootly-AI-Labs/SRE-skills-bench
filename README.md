@@ -24,11 +24,17 @@ The table below represents the average accuracy of each model across all SRE-rel
 
 | Org | Model | SRE-skills-bench score | Ouput Token Cost (per M) | Run Date |
 |-----|-------|------------------------|---------------------------|------|
-| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.2-pro 🏆 | 95.34% | $168.00 💸 | Dec. 12, 2025 |
-| <img src="static/Google-Gemini.png" alt="Google" style="height:2em"> | gemini-3-pro | 94.88% | $12.00 | Nov. 24, 2025 |
-| <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | opus-4.5 | 92.93% | $25.00 | Nov. 24, 2025 |
-| <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | sonnet-4.5 | 92.71% | $15.00  | Nov. 24, 2025 |
-| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.1-codex-max | 92.50% | $10.00 | Dec. 10, 2025 |
+| <img src="static/Google-Gemini.png" alt="Google" style="height:2em"> | gemini-3.1-pro 🏆 | 98.8% | $12.00 | Feb. 19, 2026 |
+| <img src="static/Google-Gemini.png" alt="Google" style="height:2em"> | gemini-3-pro | 96.7% | $12.00 | Feb. 17, 2026 |
+| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.2-pro | 96.5% | $168.00 💸 | Feb. 17, 2026 |
+| <img src="static/moonshotai.png" alt="Moonshot AI" style="height:2em"> | kimi-k2.5  | 95.9% | $2.20 | Feb. 17, 2026 |
+| <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | opus-4.6 | 94.7% | $25.00 | Feb. 17, 2026 |
+| <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | opus-4.5 | 94.6% | $25.00 | Feb. 17, 2026 |
+| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.1 | 93.3% | $14.00 | Feb. 17, 2026 |
+| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.1-codex-max | 92.5% | $10.00 | Dec. 10, 2025 |
+| <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | sonnet-4.6 | 90.4% | $15.00  | Feb. 17, 2026 |
+| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.1 | 89.6% | $10.00 | Nov. 24, 2025 |
+
 
 **👉 Visit our website [sreskillsbench.com](https://sreskillsbench.com/) to have access to all the findings.**
 
