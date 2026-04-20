@@ -29,7 +29,7 @@ The table below represents the average accuracy of each model across all SRE-rel
 | <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | opus-4.7 (high) | 98.2% | $25.00 | Apr. 16, 2026 |
 | <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.3-codex | 98.03% | $14.00 | Mar. 13, 2026 |
 | <img src="static/Google-Gemini.png" alt="Google" style="height:2em"> | gemini-3-pro | 96.7% | $12.00 | Feb. 17, 2026 |
-| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.2-pro | 96.5% | $168.00 💸 | Feb. 17, 2026 i|
+| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.2-pro | 96.5% | $168.00 💸 | Feb. 17, 2026 |
 | <img src="static/moonshotai.jpg" alt="Moonshot AI" style="height:2em"> | kimi-k2.5  | 95.9% | $2.20 | Feb. 17, 2026 |
 | <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | opus-4.6 | 94.7% | $25.00 | Feb. 17, 2026 |
 | <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | opus-4.5 | 94.6% | $25.00 | Feb. 17, 2026 |
