@@ -25,6 +25,7 @@ The table below represents the average accuracy of each model across all SRE-rel
 | Org | Model | SRE-skills-bench score | Ouput Token Cost (per M) | Run Date |
 |-----|-------|------------------------|---------------------------|------|
 | <img src="static/Google-Gemini.png" alt="Google" style="height:2em"> | gemini-3.1-pro 🏆 | 98.8% | $12.00 | Feb. 19, 2026 |
+| <img src="static/OpenAI.png" alt="OpenAI" style="height:2em">  | gpt-5.5 (high) | 98.3% | $30.00 | April 26, 2026 |
 | <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.4 | 98.3% | $15.00 | Mar 5, 2026 |
 | <img src="static/Anthropic.jpg" alt="Anthropic" style="height:2em"> | opus-4.7 (pro) | 98.2% | $25.00 | Apr. 16, 2026 |
 | <img src="static/OpenAI.png" alt="OpenAI" style="height:2em"> | gpt-5.3-codex | 98.03% | $14.00 | Mar. 13, 2026 |
